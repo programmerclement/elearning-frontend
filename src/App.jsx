@@ -20,13 +20,21 @@ import { InstructorCoursesPage } from './pages/instructor/InstructorCoursesPage'
 import { InstructorStudentsPage } from './pages/instructor/InstructorStudentsPage';
 import { InstructorCourseDetailsPage } from './pages/instructor/InstructorCourseDetailsPage';
 import { CourseChaptersPage } from './pages/instructor/CourseChaptersPage';
+import { CourseBuilderPage } from './pages/instructor/CourseBuilderPage';
 
 // Admin Pages
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminCoursesPage } from './pages/admin/AdminCoursesPage';
 import { AdminUsersPage } from './pages/admin/AdminUsersPage';
-import { AdminActivityPage } from './pages/admin/AdminActivityPage';
 import { AdminCourseDetailsPage } from './pages/admin/AdminCourseDetailsPage';
+import { AdminReviewsPage } from './pages/admin/AdminReviewsPage';
+import { AdminEnrollmentsPage } from './pages/admin/AdminEnrollmentsPage';
+import { AdminExercisesPage } from './pages/admin/AdminExercisesPage';
+import { AdminExerciseAttemptsPage } from './pages/admin/AdminExerciseAttemptsPage';
+import { AdminInvoicesPage } from './pages/admin/AdminInvoicesPage';
+import { AdminSyllabusesPage } from './pages/admin/AdminSyllabusesPage';
+import { AdminSyllabusOutlinesPage } from './pages/admin/AdminSyllabusOutlinesPage';
+import { AdminUserProgressPage } from './pages/admin/AdminUserProgressPage';
 
 import './App.css';
 
@@ -169,6 +177,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/instructor/create-course"
+              element={
+                <ProtectedRoute requiredRole="instructor">
+                  <CourseBuilderPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Admin Routes */}
             <Route
@@ -204,10 +220,66 @@ function App() {
               }
             />
             <Route
-              path="/admin/activity"
+              path="/admin/reviews"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <AdminActivityPage />
+                  <AdminReviewsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/enrollments"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminEnrollmentsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/exercises"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminExercisesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/exercise-attempts"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminExerciseAttemptsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/invoices"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminInvoicesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/syllabuses"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminSyllabusesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/syllabus-outlines"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminSyllabusOutlinesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/user-progress"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminUserProgressPage />
                 </ProtectedRoute>
               }
             />

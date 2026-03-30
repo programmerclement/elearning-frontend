@@ -1,28 +1,36 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { Icons } from '../Icons';
 
 export const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const { user, isStudent, isInstructor, isAdmin } = useAuth();
 
   const studentMenuItems = [
-    { name: 'Dashboard', path: '/student/dashboard', icon: '📊' },
-    { name: 'My Courses', path: '/student/courses', icon: '📚' },
-    { name: 'My Progress', path: '/student/progress', icon: '📈' },
+    { name: 'Dashboard', path: '/student/dashboard', icon: 'Dashboard' },
+    { name: 'My Courses', path: '/student/courses', icon: 'Courses' },
+    { name: 'My Progress', path: '/student/progress', icon: 'Progress' },
   ];
 
   const instructorMenuItems = [
-    { name: 'Dashboard', path: '/instructor/dashboard', icon: '📊' },
-    { name: 'My Courses', path: '/instructor/courses', icon: '📚' },
-    { name: 'Students', path: '/instructor/students', icon: '👥' },
+    { name: 'Dashboard', path: '/instructor/dashboard', icon: 'Dashboard' },
+    { name: 'My Courses', path: '/instructor/courses', icon: 'Courses' },
+    { name: 'Students', path: '/instructor/students', icon: 'Users' },
   ];
 
   const adminMenuItems = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: '📊' },
-    { name: 'Courses', path: '/admin/courses', icon: '📚' },
-    { name: 'Users', path: '/admin/users', icon: '👥' },
-    { name: 'Activity Monitor', path: '/admin/activity', icon: '📋' },
+    { name: 'Dashboard', path: '/admin/dashboard', icon: 'Dashboard' },
+    { name: 'Courses', path: '/admin/courses', icon: 'Courses' },
+    { name: 'Users', path: '/admin/users', icon: 'Users' },
+    { name: 'Reviews', path: '/admin/reviews', icon: 'Reviews' },
+    { name: 'Enrollments', path: '/admin/enrollments', icon: 'Enrollments' },
+    { name: 'Exercises', path: '/admin/exercises', icon: 'Exercises' },
+    { name: 'Exercise Attempts', path: '/admin/exercise-attempts', icon: 'Attempts' },
+    { name: 'Invoices', path: '/admin/invoices', icon: 'Invoices' },
+    { name: 'Syllabuses', path: '/admin/syllabuses', icon: 'Syllabuses' },
+    { name: 'Syllabus Outlines', path: '/admin/syllabus-outlines', icon: 'Outlines' },
+    { name: 'User Progress', path: '/admin/user-progress', icon: 'Progress' },
   ];
 
   const getMenuItems = () => {
@@ -30,6 +38,10 @@ export const Sidebar = ({ isOpen, onClose }) => {
     if (isInstructor) return instructorMenuItems;
     if (isAdmin) return adminMenuItems;
     return [];
+  };
+
+  const getIconComponent = (iconName) => {
+    return Icons[iconName] || Icons.Dashboard;
   };
 
   const menuItems = getMenuItems();
@@ -47,7 +59,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static left-0 top-0 h-screen w-64 bg-gray-900 text-white shadow-lg transition-transform duration-300 z-40 lg:z-0 ${
+        className={`fixed lg:static left-0 top-0 h-screen w-64 bg-gray-900 text-white shadow-lg transition-transform duration-300 z-40 lg:z-0 flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -72,13 +84,13 @@ export const Sidebar = ({ isOpen, onClose }) => {
         </button>
 
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-gray-700">
+        <div className="p-6 border-b border-gray-700 flex-shrink-0">
           <h2 className="text-2xl font-bold text-blue-400">Menu</h2>
           <p className="text-xs text-gray-400 mt-2 capitalize">{user?.role} Portal</p>
         </div>
 
-        {/* Menu Items */}
-        <nav className="mt-6 px-4 space-y-2">
+        {/* Menu Items - Scrollable */}
+        <nav className="mt-6 px-4 space-y-2 overflow-y-auto flex-1">
           {menuItems.map((item) => (
             <Link
               key={item.path}
@@ -90,14 +102,16 @@ export const Sidebar = ({ isOpen, onClose }) => {
                   : 'text-gray-300 hover:bg-gray-800 hover:text-white'
               }`}
             >
-              <span className="text-lg">{item.icon}</span>
+              <span className="w-6 h-6 flex-shrink-0">
+                {getIconComponent(item.icon)}
+              </span>
               <span className="font-medium">{item.name}</span>
             </Link>
           ))}
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-gray-700 flex-shrink-0">
           <p className="text-xs text-gray-400 text-center">
             E-Learning Platform v1.0
           </p>

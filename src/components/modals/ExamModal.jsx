@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRecordExerciseAttempt } from '../../hooks/useApi';
 import './ExamModal.css';
 
 const ExamModal = ({ chapter, exercises, onClose, onComplete, isLoading }) => {
@@ -6,6 +7,7 @@ const ExamModal = ({ chapter, exercises, onClose, onComplete, isLoading }) => {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [results, setResults] = useState(null);
+  const recordAttemptMutation = useRecordExerciseAttempt();
 
   const currentExercise = exercises[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === exercises.length - 1;
@@ -48,8 +50,30 @@ const ExamModal = ({ chapter, exercises, onClose, onComplete, isLoading }) => {
     return Math.round((correctCount / exercises.length) * 100);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const score = calculateScore();
+    
+    // Record each attempt to the database
+    try {
+      for (let index = 0; index < exercises.length; index++) {
+        const exercise = exercises[index];
+        const userAnswer = answers[index] || '';
+        const isCorrect = 
+          exercise.type === 'text' 
+            ? userAnswer?.toLowerCase().trim() === exercise.correct_answer?.toLowerCase().trim()
+            : userAnswer === exercise.correct_answer;
+        
+        await recordAttemptMutation.mutateAsync({
+          exerciseId: exercise.id,
+          answer: userAnswer,
+          is_correct: isCorrect ? 1 : 0,
+          score: isCorrect ? 1 : 0,
+        });
+      }
+    } catch (err) {
+      console.error('Error recording attempts:', err);
+    }
+
     setResults({
       score,
       totalQuestions: exercises.length,
@@ -118,6 +142,12 @@ const ExamModal = ({ chapter, exercises, onClose, onComplete, isLoading }) => {
                   >
                     Review
                   </button>
+                  <button
+                    onClick={onClose}
+                    className="flex-1 border border-red-300 text-red-700 py-2 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    Close
+                  </button>
                 </>
               ) : (
                 <>
@@ -151,9 +181,20 @@ const ExamModal = ({ chapter, exercises, onClose, onComplete, isLoading }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 my-8">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-          <h2 className="text-2xl font-bold mb-2">{chapter.title}</h2>
-          <p className="text-blue-100">Quiz Progress: {currentQuestionIndex + 1} of {exercises.length}</p>
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">{chapter.title}</h2>
+            <p className="text-blue-100">Quiz Progress: {currentQuestionIndex + 1} of {exercises.length}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white hover:bg-blue-800 rounded-full p-2 transition-colors"
+            title="Close quiz"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         {/* Progress Bar */}

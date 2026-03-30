@@ -238,3 +238,19 @@ export const Alert = ({ type = 'info', title, message, onClose, className = '' }
     </div>
   );
 };
+
+// ============================================================================
+// NEW UPGRADED COMPONENTS
+// ============================================================================
+
+export { default as DashboardMetrics } from './DashboardMetrics';
+export { default as LessonHistoryTable } from './LessonHistoryTable';
+export { default as MultiStepCourseBuilder } from './MultiStepCourseBuilder';
+export { default as PaymentPage } from './PaymentPage';
+export { default as SyllabusBuilder } from './SyllabusBuilder';
+export { default as CourseReviewPage } from './CourseReviewPage';
+export { default as CourseReviews } from './CourseReviews';
+export { default as StudentProgress } from './StudentProgress';
+export { default as Followers } from './Followers';
+export { default as UserProfile } from './UserProfile';
+export { default as CourseInstructorCard } from './CourseInstructorCard';

@@ -91,15 +91,23 @@ export const InstructorCoursesPage = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-2">📚 My Courses</h1>
             <p className="text-gray-600">Manage and create your courses</p>
           </div>
-          <button
-            onClick={() => {
-              setEditingCourse(null);
-              setShowForm(true);
-            }}
-            className="mt-4 md:mt-0 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-          >
-            + Create Course
-          </button>
+          <div className="mt-4 md:mt-0 flex gap-2">
+            <button
+              onClick={() => navigate('/instructor/create-course')}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold"
+            >
+              + Create Course (New)
+            </button>
+            <button
+              onClick={() => {
+                setEditingCourse(null);
+                setShowForm(true);
+              }}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+              + Create Course (Quick)
+            </button>
+          </div>
         </div>
 
         {/* Courses Table */}

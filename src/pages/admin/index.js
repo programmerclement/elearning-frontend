@@ -1,1 +1,12 @@
 export { AdminDashboard } from './AdminDashboard';
+export { AdminCoursesPage } from './AdminCoursesPage';
+export { AdminUsersPage } from './AdminUsersPage';
+export { AdminCourseDetailsPage } from './AdminCourseDetailsPage';
+export { AdminReviewsPage } from './AdminReviewsPage';
+export { AdminEnrollmentsPage } from './AdminEnrollmentsPage';
+export { AdminExercisesPage } from './AdminExercisesPage';
+export { AdminExerciseAttemptsPage } from './AdminExerciseAttemptsPage';
+export { AdminInvoicesPage } from './AdminInvoicesPage';
+export { AdminSyllabusesPage } from './AdminSyllabusesPage';
+export { AdminSyllabusOutlinesPage } from './AdminSyllabusOutlinesPage';
+export { AdminUserProgressPage } from './AdminUserProgressPage';
