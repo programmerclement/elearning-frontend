@@ -364,5 +364,3 @@ const StepIndicator = ({ number, title, active, completed }) => (
     <p className={`text-sm font-medium mt-2 ${active ? 'text-blue-600' : 'text-gray-600'}`}>{title}</p>
   </div>
 );
-
-export default CourseBuilderPage;
