@@ -52,10 +52,8 @@ export const InstructorDashboard = () => {
               </div>
 
               <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-                <p className="text-gray-600 text-sm">Total Revenue</p>
-                <p className="text-3xl font-bold text-purple-600">
-                  ${(Number(data?.data?.totalRevenue) || 0).toFixed(2)}
-                </p>
+                <p className="text-gray-600 text-sm">Total Enrollments</p>
+                <p className="text-3xl font-bold text-purple-600">{data?.data?.totalEnrollments || 0}</p>
               </div>
 
               <div className="bg-white rounded-lg shadow p-6 border border-gray-200">

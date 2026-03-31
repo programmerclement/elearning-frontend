@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
-import { useCourses, useCourseSyllabuses, useAddSyllabusOutline, useUpdateSyllabusOutline, useDeleteSyllabusOutline } from '../../hooks/useApi';
-import { useQuery } from '@tanstack/react-query';
-import apiClient from '../../api/client';
+import { useCourses, useAllSyllabuses, useAllSyllabusOutlines, useAddSyllabusOutline, useUpdateSyllabusOutline, useDeleteSyllabusOutline } from '../../hooks/useApi';
 
 export const AdminSyllabusOutlinesPage = () => {
   const { data: coursesData } = useCourses();
+  const { data: allSyllabusesData, isLoading: syllabusesLoading } = useAllSyllabuses();
+  const { data: allOutlinesData, isLoading: outlinesLoading, refetch: refetchOutlines } = useAllSyllabusOutlines();
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [selectedSyllabusId, setSelectedSyllabusId] = useState(null);
-  const { data: syllabusesData } = useCourseSyllabuses(selectedCourseId);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ title: '', description: '' });
@@ -17,20 +16,19 @@ export const AdminSyllabusOutlinesPage = () => {
   const updateOutlineMutation = useUpdateSyllabusOutline();
   const deleteOutlineMutation = useDeleteSyllabusOutline();
 
-  // Get outlines for selected syllabus
-  const { data: outlinesData, refetch: refetchOutlines } = useQuery({
-    queryKey: ['syllabus-outlines', selectedSyllabusId],
-    queryFn: async () => {
-      if (!selectedSyllabusId) return { data: [] };
-      const response = await apiClient.get(`/syllabuses/${selectedSyllabusId}/outlines`);
-      return response.data;
-    },
-    enabled: !!selectedSyllabusId,
-  });
-
   const courses = coursesData?.data || [];
-  const syllabuses = syllabusesData && Array.isArray(syllabusesData) ? syllabusesData : syllabusesData?.data || [];
-  const outlines = outlinesData && Array.isArray(outlinesData) ? outlinesData : outlinesData?.data || [];
+  const allSyllabuses = Array.isArray(allSyllabusesData) ? allSyllabusesData : [];
+  const allOutlines = Array.isArray(allOutlinesData) ? allOutlinesData : [];
+
+  // Filter syllabuses based on selected course
+  const filteredSyllabuses = selectedCourseId
+    ? allSyllabuses.filter((syllabus) => syllabus.course_id === selectedCourseId)
+    : allSyllabuses;
+
+  // Filter outlines based on selected syllabus
+  const filteredOutlines = selectedSyllabusId
+    ? allOutlines.filter((outline) => outline.syllabus_id === selectedSyllabusId)
+    : [];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -86,6 +84,21 @@ export const AdminSyllabusOutlinesPage = () => {
       <div className="p-8">
         <h1 className="text-3xl font-bold mb-6">Manage Syllabus Outlines</h1>
 
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-gray-600 text-sm">Total Outlines</p>
+            <p className="text-3xl font-bold text-blue-600">{filteredOutlines.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-gray-600 text-sm">Total Syllabuses</p>
+            <p className="text-3xl font-bold text-green-600">{filteredSyllabuses.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-gray-600 text-sm">Total Courses</p>
+            <p className="text-3xl font-bold text-purple-600">{courses.length}</p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Select Course</label>
@@ -112,10 +125,10 @@ export const AdminSyllabusOutlinesPage = () => {
               value={selectedSyllabusId || ''}
               onChange={(e) => setSelectedSyllabusId(e.target.value ? parseInt(e.target.value) : null)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={!selectedCourseId}
+              disabled={!selectedCourseId || syllabusesLoading}
             >
               <option value="">Select a syllabus</option>
-              {syllabuses.map((syllabus) => (
+              {filteredSyllabuses.map((syllabus) => (
                 <option key={syllabus.id} value={syllabus.id}>
                   {syllabus.title}
                 </option>
@@ -172,7 +185,11 @@ export const AdminSyllabusOutlinesPage = () => {
         )}
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          {outlines.length === 0 ? (
+          {outlinesLoading ? (
+            <div className="p-8 text-center text-gray-600">
+              <p>Loading outlines...</p>
+            </div>
+          ) : filteredOutlines.length === 0 ? (
             <div className="p-8 text-center text-gray-600">
               <p>No outlines found for this syllabus</p>
             </div>
@@ -188,7 +205,7 @@ export const AdminSyllabusOutlinesPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {outlines.map((outline) => (
+                  {filteredOutlines.map((outline) => (
                     <tr key={outline.id} className="border-b hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-medium text-gray-800">{outline.title}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">{outline.description}</td>

@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
-import { useCourses, useCourseEnrollments } from '../../hooks/useApi';
+import { useCourses, useAllEnrollments } from '../../hooks/useApi';
 
 export const AdminEnrollmentsPage = () => {
   const { data: coursesData } = useCourses();
+  const { data: allEnrollmentsData, isLoading: enrollmentsLoading } = useAllEnrollments();
   const [selectedCourseId, setSelectedCourseId] = useState(null);
-  const { data: enrollmentsData, refetch: refetchEnrollments } = useCourseEnrollments(selectedCourseId);
 
   const courses = coursesData?.data || [];
-  const enrollments = enrollmentsData && Array.isArray(enrollmentsData) ? enrollmentsData : enrollmentsData?.data || [];
+  const allEnrollments = Array.isArray(allEnrollmentsData) ? allEnrollmentsData : [];
+
+  // Filter enrollments based on selected course (client-side)
+  const filteredEnrollments = selectedCourseId
+    ? allEnrollments.filter((enrollment) => enrollment.course_id === selectedCourseId)
+    : allEnrollments;
 
   return (
     <DashboardLayout>
@@ -18,7 +23,7 @@ export const AdminEnrollmentsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm">Total Enrollments</p>
-            <p className="text-3xl font-bold text-blue-600">{enrollments.length}</p>
+            <p className="text-3xl font-bold text-blue-600">{filteredEnrollments.length}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm">Total Courses</p>
@@ -27,7 +32,7 @@ export const AdminEnrollmentsPage = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm">Average per Course</p>
             <p className="text-3xl font-bold text-purple-600">
-              {courses.length > 0 ? Math.round(enrollments.length / courses.length) : 0}
+              {courses.length > 0 ? Math.round(allEnrollments.length / courses.length) : 0}
             </p>
           </div>
         </div>
@@ -49,7 +54,11 @@ export const AdminEnrollmentsPage = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          {enrollments.length === 0 ? (
+          {enrollmentsLoading ? (
+            <div className="p-8 text-center text-gray-600">
+              <p>Loading enrollments...</p>
+            </div>
+          ) : filteredEnrollments.length === 0 ? (
             <div className="p-8 text-center text-gray-600">
               <p>No enrollments found</p>
             </div>
@@ -66,7 +75,7 @@ export const AdminEnrollmentsPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {enrollments.map((enrollment) => (
+                  {filteredEnrollments.map((enrollment) => (
                     <tr key={enrollment.id} className="border-b hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm text-gray-800">{enrollment.course_title}</td>
                       <td className="px-6 py-4 text-sm text-gray-800">{enrollment.student_name}</td>

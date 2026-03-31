@@ -1,10 +1,14 @@
-import { useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
-import { useStudentDashboard } from '../../hooks/useApi';
+import { useStudentDashboard, useUserInvoices } from '../../hooks/useApi';
 
 export const StudentDashboard = () => {
   const { data, isLoading, error } = useStudentDashboard();
-  const [activeTab, setActiveTab] = useState('overview');
+  const { data: invoicesData } = useUserInvoices();
+
+  const invoices = invoicesData?.data || [];
+  const totalSpent = invoices
+    .filter(inv => inv.status === 'paid')
+    .reduce((sum, inv) => sum + (Number(inv.total) || 0), 0);
 
   return (
     <DashboardLayout>
@@ -28,7 +32,7 @@ export const StudentDashboard = () => {
         )}
 
         {!isLoading && !error && data && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
             <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
               <p className="text-gray-600 text-sm">Enrolled Courses</p>
               <p className="text-3xl font-bold text-blue-600">{data?.data?.enrolledCourses?.length || 0}</p>
@@ -47,6 +51,11 @@ export const StudentDashboard = () => {
             <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
               <p className="text-gray-600 text-sm">Completed</p>
               <p className="text-3xl font-bold text-orange-600">{data?.data?.progressStats?.completedChapters || 0}</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg shadow p-6 border border-red-200">
+              <p className="text-gray-600 text-sm">Total Spent</p>
+              <p className="text-3xl font-bold text-red-600">${totalSpent.toFixed(2)}</p>
             </div>
           </div>
         )}

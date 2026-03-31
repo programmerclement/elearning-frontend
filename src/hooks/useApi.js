@@ -354,6 +354,17 @@ export const useCreatePayment = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['payments', 'user-invoices'] });
+    },
+  });
+};
+
+export const useUserInvoices = () => {
+  return useQuery({
+    queryKey: ['payments', 'user-invoices'],
+    queryFn: async () => {
+      const response = await apiClient.get('/payments/my-invoices');
+      return response.data;
     },
   });
 };
@@ -474,12 +485,22 @@ export const useRecordExerciseAttempt = () => {
 // REVIEW HOOKS
 // ============================================================================
 
+export const useAllReviews = () => {
+  return useQuery({
+    queryKey: ['reviews', 'all'],
+    queryFn: async () => {
+      const response = await apiClient.get('/reviews');
+      return response.data.data?.reviews || response.data.reviews || [];
+    },
+  });
+};
+
 export const useCourseReviews = (courseId) => {
   return useQuery({
     queryKey: ['reviews', 'course', courseId],
     queryFn: async () => {
       const response = await apiClient.get(`/reviews/course/${courseId}`);
-      return response.data;
+      return response.data.data; // Extract from { success, message, data: { reviews, stats } }
     },
     enabled: !!courseId,
   });
@@ -490,7 +511,7 @@ export const useUserCourseReview = (courseId) => {
     queryKey: ['reviews', 'course', courseId, 'my-review'],
     queryFn: async () => {
       const response = await apiClient.get(`/reviews/course/${courseId}/my-review`);
-      return response.data.review;
+      return response.data.data?.review || null; // Extract review from nested data
     },
     enabled: !!courseId,
   });
@@ -503,9 +524,14 @@ export const useCreateReview = () => {
       const response = await apiClient.post('/reviews', data);
       return response.data;
     },
-    onSuccess: (_, { course_id }) => {
+    onSuccess: (response, variables) => {
+      const { course_id } = variables;
+      // Invalidate course reviews
       queryClient.invalidateQueries({ queryKey: ['reviews', 'course', course_id] });
+      // Invalidate user's review
       queryClient.invalidateQueries({ queryKey: ['reviews', 'course', course_id, 'my-review'] });
+      // Invalidate all reviews queries
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
   });
 };
@@ -518,6 +544,7 @@ export const useUpdateReview = () => {
       return response.data;
     },
     onSuccess: () => {
+      // Invalidate all review queries
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
   });
@@ -531,6 +558,7 @@ export const useDeleteReview = () => {
       return response.data;
     },
     onSuccess: () => {
+      // Invalidate all review queries
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
   });
@@ -596,6 +624,58 @@ export const useInstructorStudents = () => {
     queryFn: async () => {
       const response = await apiClient.get('/instructor/students');
       return response.data;
+    },
+  });
+};
+
+// ============================================================================
+// ADMIN GLOBAL DATA HOOKS
+// ============================================================================
+
+// Get all exercises across all courses (for admin)
+export const useAllExercises = () => {
+  return useQuery({
+    queryKey: ['exercises', 'all'],
+    queryFn: async () => {
+      const response = await apiClient.get('/exercises');
+      const data = response.data.data || response.data.exercises || response.data || [];
+      return Array.isArray(data) ? data : (data?.exercises || data?.data || []);
+    },
+  });
+};
+
+// Get all enrollments across all courses (for admin)
+export const useAllEnrollments = () => {
+  return useQuery({
+    queryKey: ['enrollments', 'all'],
+    queryFn: async () => {
+      const response = await apiClient.get('/courses/admin/all-enrollments');
+      const data = response.data.data || response.data.enrollments || response.data || [];
+      return Array.isArray(data) ? data : (data?.enrollments || data?.data || []);
+    },
+  });
+};
+
+// Get all syllabuses across all courses (for admin)
+export const useAllSyllabuses = () => {
+  return useQuery({
+    queryKey: ['syllabuses', 'all'],
+    queryFn: async () => {
+      const response = await apiClient.get('/syllabuses');
+      const data = response.data.data || response.data.syllabuses || response.data || [];
+      return Array.isArray(data) ? data : (data?.syllabuses || data?.data || []);
+    },
+  });
+};
+
+// Get all syllabus outlines (for admin)
+export const useAllSyllabusOutlines = () => {
+  return useQuery({
+    queryKey: ['syllabus-outlines', 'all'],
+    queryFn: async () => {
+      const response = await apiClient.get('/syllabuses/outlines');
+      const data = response.data.data || response.data.outlines || response.data || [];
+      return Array.isArray(data) ? data : (data?.outlines || data?.data || []);
     },
   });
 };

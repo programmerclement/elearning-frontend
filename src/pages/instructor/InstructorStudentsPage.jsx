@@ -57,9 +57,9 @@ export const InstructorStudentsPage = () => {
             <p className="text-3xl font-bold text-blue-600">{students.length}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <p className="text-gray-600 text-sm">Active This Week</p>
+            <p className="text-gray-600 text-sm">Total Enrollments</p>
             <p className="text-3xl font-bold text-green-600">
-              {students.filter(s => s.is_active).length || 0}
+              {students.reduce((sum, s) => sum + (s.course_count || 0), 0) || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
@@ -88,8 +88,8 @@ export const InstructorStudentsPage = () => {
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Name</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Email</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Enrolled Courses</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Enrollment Date</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Courses</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Enrollment Date</th>
                     <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Status</th>
                   </tr>
                 </thead>
@@ -102,8 +102,16 @@ export const InstructorStudentsPage = () => {
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {studentEmail(student)}
                       </td>
-                      <td className="px-6 py-4 text-center text-sm font-medium text-gray-700">
-                        {student.course_count || 1}
+                      <td className="px-6 py-4 text-sm text-gray-700">
+                        <div className="flex flex-wrap gap-2">
+                          {student.course_titles ? student.course_titles.split(', ').map((course, idx) => (
+                            <span key={idx} className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {course}
+                            </span>
+                          )) : (
+                            <span className="text-gray-500">No courses</span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-center text-sm text-gray-600">
                         {student.created_at

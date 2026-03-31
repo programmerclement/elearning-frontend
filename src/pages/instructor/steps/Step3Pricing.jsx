@@ -1,16 +1,63 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+/**
+ * Format price as USD currency
+ */
+const formatPrice = (value) => {
+  const num = parseFloat(value) || 0;
+  return num.toFixed(2);
+};
 
 /**
  * Step 3: Pricing & Payment
  * Shows invoice breakdown and coupon support
  */
-const Step3Pricing = ({ formData, setFormData, invoicePreview, errors }) => {
+const Step3Pricing = ({ formData, setFormData, invoicePreview, setInvoicePreview, errors, onApplyCoupon }) => {
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!formData.coupon_code?.trim()) {
+      return;
+    }
+
+    setCouponLoading(true);
+    try {
+      if (onApplyCoupon) {
+        await onApplyCoupon(formData.coupon_code);
+      }
+      setAppliedCoupon(formData.coupon_code);
+    } catch (err) {
+      console.error('Error applying coupon:', err);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleClearCoupon = () => {
+    setFormData(prev => ({
+      ...prev,
+      coupon_code: ''
+    }));
+    setAppliedCoupon(null);
+    setInvoicePreview(prevPreview => {
+      if (!prevPreview) return prevPreview;
+      return {
+        ...prevPreview,
+        original_price: prevPreview.subtotal + prevPreview.discount_amount,
+        discount_amount: 0,
+        subtotal: prevPreview.subtotal + prevPreview.discount_amount,
+        coupon: null
+      };
+    });
   };
 
   const paymentMethods = [
@@ -21,18 +68,18 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, errors }) => {
   ];
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Pricing & Payment</h2>
-      <p className="text-gray-600">Review the pricing and select your payment method</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Pricing & Payment</h2>
+      <p className="text-xs sm:text-base text-gray-600">Review the pricing and select your payment method</p>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left: Payment Method Selection */}
         <div className="col-span-1">
-          <h3 className="text-lg font-semibold mb-4">Payment Method</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-4">Payment Method</h3>
 
           <div className="space-y-3">
             {paymentMethods.map(method => (
-              <label key={method.id} className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
+              <label key={method.id} className="flex items-center p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
                 <input
                   type="radio"
                   name="payment_method"
@@ -42,7 +89,7 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, errors }) => {
                   className="w-4 h-4"
                 />
                 <div className="ml-3">
-                  <p className="font-medium">{method.icon} {method.name}</p>
+                  <p className="text-xs sm:text-sm font-medium">{method.icon} {method.name}</p>
                 </div>
               </label>
             ))}
@@ -50,7 +97,7 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, errors }) => {
 
           {/* Coupon Code */}
           <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Coupon Code
             </label>
             <div className="flex gap-2">
@@ -60,77 +107,98 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, errors }) => {
                 value={formData.coupon_code}
                 onChange={handleChange}
                 placeholder="Enter code"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                disabled={appliedCoupon !== null}
+                className="flex-1 px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg disabled:bg-gray-100"
               />
-              <button className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
-                Apply
-              </button>
+              {appliedCoupon ? (
+                <button
+                  onClick={handleClearCoupon}
+                  className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs sm:text-sm transition whitespace-nowrap"
+                >
+                  Clear
+                </button>
+              ) : (
+                <button
+                  onClick={handleApplyCoupon}
+                  disabled={couponLoading || !formData.coupon_code?.trim()}
+                  className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-xs sm:text-sm transition whitespace-nowrap"
+                >
+                  {couponLoading ? 'Applying...' : 'Apply'}
+                </button>
+              )}
             </div>
             {invoicePreview?.coupon && (
-              <p className="text-sm text-green-600 mt-2">
-                ✓ Coupon applied: {invoicePreview.coupon.discount_percentage}% off
+              <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                <span>✓</span> Coupon applied: {invoicePreview.coupon.discount_percentage}% off
               </p>
             )}
           </div>
         </div>
 
         {/* Right: Invoice Breakdown */}
-        <div className="col-span-2">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
-            <h3 className="text-lg font-semibold mb-6 text-gray-900">Invoice Breakdown</h3>
+        <div className="col-span-1 lg:col-span-2">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-3 sm:p-6 border border-blue-200">
+            <h3 className="text-base sm:text-lg font-semibold mb-6 text-gray-900">Invoice Breakdown</h3>
 
             {invoicePreview ? (
               <div className="space-y-4">
                 {/* Pricing Lines */}
                 <div className="space-y-3 pb-4 border-b-2 border-gray-300">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-gray-700">Original Price:</span>
                     <span className="font-semibold">
-                      ${invoicePreview.original_price?.toFixed(2) || '0.00'}
+                      ${formatPrice(invoicePreview.original_price)}
                     </span>
                   </div>
 
                   {invoicePreview.discount_amount > 0 && (
-                    <div className="flex justify-between items-center text-green-600">
-                      <span>Discount:</span>
+                    <div className="flex justify-between items-center text-xs sm:text-sm text-green-600">
+                      <span>Discount ({invoicePreview.coupon?.discount_percentage}%):</span>
                       <span className="font-semibold">
-                        -${invoicePreview.discount_amount?.toFixed(2) || '0.00'}
+                        -${formatPrice(invoicePreview.discount_amount)}
                       </span>
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-gray-700">Subtotal:</span>
                     <span className="font-semibold">
-                      ${invoicePreview.subtotal?.toFixed(2) || '0.00'}
+                      ${formatPrice(invoicePreview.subtotal)}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-gray-700">Service Fee (5%):</span>
                     <span className="font-semibold">
-                      ${invoicePreview.service_fee?.toFixed(2) || '0.00'}
+                      ${formatPrice(invoicePreview.service_fee)}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-gray-700">VAT (15%):</span>
                     <span className="font-semibold">
-                      ${invoicePreview.vat?.toFixed(2) || '0.00'}
+                      ${formatPrice(invoicePreview.vat)}
                     </span>
                   </div>
                 </div>
 
                 {/* Total */}
                 <div className="flex justify-between items-center pt-4">
-                  <span className="text-xl font-bold text-gray-900">Total Amount:</span>
-                  <span className="text-3xl font-bold text-blue-600">
-                    ${invoicePreview.total?.toFixed(2) || '0.00'}
+                  <span className="text-base sm:text-xl font-bold text-gray-900">Total Amount:</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-blue-600">
+                    ${formatPrice(invoicePreview.total)}
                   </span>
                 </div>
 
+                {/* Savings Badge */}
+                {invoicePreview.discount_amount > 0 && (
+                  <div className="mt-4 p-3 bg-green-100 border border-green-400 rounded-lg text-green-800 text-xs sm:text-sm text-center font-semibold">
+                    💰 You save ${formatPrice(invoicePreview.discount_amount)} with this coupon!
+                  </div>
+                )}
+
                 {/* Payment Breakdown Details */}
-                <div className="mt-6 bg-white rounded-lg p-4 text-sm text-gray-600 space-y-1">
+                <div className="mt-6 bg-white rounded-lg p-3 sm:p-4 text-xs sm:text-sm text-gray-600 space-y-1">
                   <p><strong>Payment Terms:</strong> Non-refundable digital product</p>
                   <p><strong>Tax ID:</strong> Will be provided on invoice</p>
                   <p><strong>Currency:</strong> USD</p>
@@ -163,7 +231,7 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, errors }) => {
           <li>Course price (set in Step 1)</li>
           <li>5% platform service fee</li>
           <li>15% VAT (Value Added Tax)</li>
-          <li>Any applicable coupon discounts</li>
+          <li>Any applicable coupon discounts (apply above)</li>
         </ul>
       </div>
 

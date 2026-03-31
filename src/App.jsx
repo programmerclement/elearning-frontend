@@ -13,6 +13,7 @@ import { StudentCoursesPage } from './pages/student/StudentCoursesPage';
 import { StudentProgressPage } from './pages/student/StudentProgressPage';
 import { StudentCourseDetailsPage } from './pages/student/StudentCourseDetailsPage';
 import { CourseDetailsPage } from './pages/student/CourseDetailsPage';
+import { PaymentInvoicesPage } from './pages/student/PaymentInvoicesPage';
 
 // Instructor Pages
 import { InstructorDashboard } from './pages/instructor/InstructorDashboard';
@@ -124,6 +125,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="student">
                   <StudentProgressPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/payments"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <PaymentInvoicesPage />
                 </ProtectedRoute>
               }
             />

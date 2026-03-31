@@ -2,23 +2,48 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../api/client';
 
 /**
+ * Format price as USD currency
+ * Safely converts to number before formatting
+ */
+const formatPrice = (value) => {
+  const num = parseFloat(value) || 0;
+  return num.toFixed(2);
+};
+
+/**
  * Step 4: Review
  * Shows complete course structure with all chapters and exercises
+ * Allows publishing the course
  */
-const Step4Review = ({ formData, invoicePreview }) => {
+const Step4Review = ({ formData, invoicePreview, onPublish, isPublishing }) => {
   const [courseData, setCourseData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [expandedChapter, setExpandedChapter] = useState(null);
 
   useEffect(() => {
     const fetchCourseData = async () => {
       try {
-        if (formData.courseId) {
-          const response = await axiosInstance.get(`/api/courses/${formData.courseId}`);
-          setCourseData(response.data.data);
+        if (!formData.courseId) {
+          setError('No course ID provided');
+          setLoading(false);
+          return;
         }
+
+        const response = await axiosInstance.get(`/courses/${formData.courseId}`);
+        const courseInfo = response.data?.data || response.data;
+        
+        if (!courseInfo) {
+          setError('Invalid course data received from server');
+          setLoading(false);
+          return;
+        }
+        
+        setCourseData(courseInfo);
+        setError(null);
       } catch (err) {
         console.error('Failed to fetch course data:', err);
+        setError(err.message || 'Failed to load course details');
       } finally {
         setLoading(false);
       }
@@ -36,10 +61,20 @@ const Step4Review = ({ formData, invoicePreview }) => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-600 mb-4 text-lg">⚠️ {error}</div>
+        <p className="text-gray-500 text-sm">Course ID: {formData.courseId}</p>
+      </div>
+    );
+  }
+
   if (!courseData) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <p>Course data not found</p>
+      <div className="text-center py-12">
+        <div className="text-orange-600 mb-4 text-lg">⚠️ Course data not available</div>
+        <p className="text-gray-500 text-sm">Please complete Steps 1-2 first and proceed to Step 3.</p>
       </div>
     );
   }
@@ -53,7 +88,7 @@ const Step4Review = ({ formData, invoicePreview }) => {
       <p className="text-gray-600">Review your complete course structure before publishing</p>
 
       {/* Course Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
         <SummaryCard
           label="Total Chapters"
           value={totalChapters}
@@ -71,15 +106,15 @@ const Step4Review = ({ formData, invoicePreview }) => {
         />
         <SummaryCard
           label="Price"
-          value={`$${courseData.subscription_price?.toFixed(2) || '0.00'}`}
+          value={`$${formatPrice(courseData.subscription_price)}`}
           icon="💰"
         />
       </div>
 
       {/* Course Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-6 text-white">
-        <h3 className="text-2xl font-bold mb-2">{courseData.title}</h3>
-        <p className="text-blue-100 mb-4">{courseData.description}</p>
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-3 sm:p-6 text-white">
+        <h3 className="text-xl sm:text-2xl font-bold mb-2 line-clamp-2">{courseData.title}</h3>
+        <p className="text-sm sm:text-base text-blue-100 mb-4 line-clamp-3">{courseData.description}</p>
         <div className="flex flex-wrap gap-2">
           <Badge label={courseData.category} color="bg-blue-500" />
           <Badge label={`${courseData.education_level} Level`} color="bg-indigo-500" />
@@ -88,14 +123,14 @@ const Step4Review = ({ formData, invoicePreview }) => {
       </div>
 
       {/* Course Details */}
-      <div className="grid grid-cols-2 gap-6">
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="font-semibold mb-3">Target Audience</h4>
-          <p className="text-sm text-gray-700">{courseData.target_audience}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+          <h4 className="text-sm sm:text-base font-semibold mb-3">Target Audience</h4>
+          <p className="text-xs sm:text-sm text-gray-700">{courseData.target_audience}</p>
         </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="font-semibold mb-3">Learning Objectives</h4>
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{courseData.objectives}</p>
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+          <h4 className="text-sm sm:text-base font-semibold mb-3">Learning Objectives</h4>
+          <p className="text-xs sm:text-sm text-gray-700 whitespace-pre-wrap line-clamp-5">{courseData.objectives}</p>
         </div>
       </div>
 
@@ -125,42 +160,42 @@ const Step4Review = ({ formData, invoicePreview }) => {
 
       {/* Invoice Summary */}
       {invoicePreview && (
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
-          <h3 className="text-lg font-semibold mb-4 text-green-900">Payment Summary</h3>
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 sm:p-6 border border-green-200">
+          <h3 className="text-base sm:text-lg font-semibold mb-4 text-green-900">Payment Summary</h3>
           <div className="space-y-3">
-            <div className="flex justify-between">
+            <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-gray-700">Subtotal:</span>
-              <span className="font-semibold">${invoicePreview.subtotal?.toFixed(2)}</span>
+              <span className="font-semibold">${formatPrice(invoicePreview.subtotal)}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-gray-700">Service Fee:</span>
-              <span className="font-semibold">${invoicePreview.service_fee?.toFixed(2)}</span>
+              <span className="font-semibold">${formatPrice(invoicePreview.service_fee)}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-gray-700">VAT:</span>
-              <span className="font-semibold">${invoicePreview.vat?.toFixed(2)}</span>
+              <span className="font-semibold">${formatPrice(invoicePreview.vat)}</span>
             </div>
             {invoicePreview.discount_amount > 0 && (
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-xs sm:text-sm text-green-600">
                 <span>Discount:</span>
-                <span className="font-semibold">-${invoicePreview.discount_amount?.toFixed(2)}</span>
+                <span className="font-semibold">-${formatPrice(invoicePreview.discount_amount)}</span>
               </div>
             )}
             <div className="border-t-2 border-green-300 pt-3 flex justify-between">
               <span className="font-bold text-green-900">Total:</span>
-              <span className="text-2xl font-bold text-green-600">${invoicePreview.total?.toFixed(2)}</span>
+              <span className="text-lg sm:text-2xl font-bold text-green-600">${formatPrice(invoicePreview.total)}</span>
             </div>
           </div>
         </div>
       )}
 
       {/* Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-semibold text-blue-900 mb-2">ℹ️ Step 4 Information</h4>
-        <p className="text-sm text-blue-800 mb-2">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+        <h4 className="text-sm sm:text-base font-semibold text-blue-900 mb-2">ℹ️ Step 4 Information</h4>
+        <p className="text-xs sm:text-sm text-blue-800 mb-2">
           This is your final chance to review everything before publishing your course.
         </p>
-        <ul className="text-sm text-blue-800 list-disc list-inside space-y-1">
+        <ul className="text-xs sm:text-sm text-blue-800 list-disc list-inside space-y-1">
           <li>Course title, description, and metadata</li>
           <li>All chapters and their content</li>
           <li>Exercises and answers</li>
@@ -179,6 +214,23 @@ const Step4Review = ({ formData, invoicePreview }) => {
           <CheckItem done={!!courseData.objectives}>Objectives are defined</CheckItem>
         </div>
       </div>
+
+      {/* Publish Action */}
+      {onPublish && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-3 sm:p-6">
+          <h4 className="text-base sm:text-lg font-semibold text-green-900 mb-3">✅ Ready to Publish?</h4>
+          <p className="text-xs sm:text-sm text-green-800 mb-4">
+            Once you publish this course, it will be available for students to enroll. You can still edit the course after publishing.
+          </p>
+          <button
+            onClick={onPublish}
+            disabled={isPublishing}
+            className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold transition text-sm sm:text-base"
+          >
+            {isPublishing ? '🔄 Publishing...' : '🚀 Publish Course Now'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -187,10 +239,10 @@ const Step4Review = ({ formData, invoicePreview }) => {
  * Summary Card Component
  */
 const SummaryCard = ({ label, value, icon }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-    <div className="text-3xl mb-2">{icon}</div>
-    <p className="text-2xl font-bold text-gray-900">{value}</p>
-    <p className="text-sm text-gray-600 mt-1">{label}</p>
+  <div className="bg-white border border-gray-200 rounded-lg p-2 sm:p-4 text-center">
+    <div className="text-2xl sm:text-3xl mb-2">{icon}</div>
+    <p className="text-lg sm:text-2xl font-bold text-gray-900">{value}</p>
+    <p className="text-xs sm:text-sm text-gray-600 mt-1">{label}</p>
   </div>
 );
 

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
-import { useCourses } from '../../hooks/useApi';
+import { useCourses, useAllExercises } from '../../hooks/useApi';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 
 export const AdminExercisesPage = () => {
   const { data: coursesData } = useCourses();
+  const { data: allExercisesData, isLoading: exercisesLoading, refetch: refetchExercises } = useAllExercises();
   const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [selectedChapterId, setSelectedChapterId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
@@ -19,6 +21,7 @@ export const AdminExercisesPage = () => {
   });
 
   const courses = coursesData?.data || [];
+  const allExercises = Array.isArray(allExercisesData) ? allExercisesData : [];
 
   // Get chapters for selected course
   const { data: chaptersData } = useQuery({
@@ -33,18 +36,12 @@ export const AdminExercisesPage = () => {
 
   const chapters = chaptersData?.data || [];
 
-  // Get exercises for selected chapter
-  const { data: exercisesData, refetch: refetchExercises } = useQuery({
-    queryKey: ['exercises', formData.chapter_id],
-    queryFn: async () => {
-      if (!formData.chapter_id) return { data: [] };
-      const response = await apiClient.get(`/chapters/${formData.chapter_id}/exercises`);
-      return response.data;
-    },
-    enabled: !!formData.chapter_id,
-  });
-
-  const exercises = exercisesData?.data || [];
+  // Filter exercises based on selected chapter (client-side)
+  const filteredExercises = selectedChapterId
+    ? allExercises.filter((ex) => ex.chapter_id === selectedChapterId)
+    : selectedCourseId
+    ? allExercises.filter((ex) => ex.course_id === selectedCourseId)
+    : allExercises;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -79,15 +76,33 @@ export const AdminExercisesPage = () => {
       <div className="p-8">
         <h1 className="text-3xl font-bold mb-6">Manage Exercises</h1>
 
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-gray-600 text-sm">Total Exercises</p>
+            <p className="text-3xl font-bold text-blue-600">{filteredExercises.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-gray-600 text-sm">Total Courses</p>
+            <p className="text-3xl font-bold text-green-600">{courses.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-gray-600 text-sm">Total Chapters</p>
+            <p className="text-3xl font-bold text-purple-600">{chapters.length}</p>
+          </div>
+        </div>
+
         <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Select Course</label>
             <select
               value={selectedCourseId || ''}
-              onChange={(e) => setSelectedCourseId(e.target.value ? parseInt(e.target.value) : null)}
+              onChange={(e) => {
+                setSelectedCourseId(e.target.value ? parseInt(e.target.value) : null);
+                setSelectedChapterId(null);
+              }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Select a course</option>
+              <option value="">All Courses</option>
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.title}
@@ -99,12 +114,12 @@ export const AdminExercisesPage = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Select Chapter</label>
             <select
-              value={formData.chapter_id || ''}
-              onChange={(e) => setFormData({ ...formData, chapter_id: e.target.value ? parseInt(e.target.value) : '' })}
+              value={selectedChapterId || ''}
+              onChange={(e) => setSelectedChapterId(e.target.value ? parseInt(e.target.value) : null)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={!selectedCourseId}
             >
-              <option value="">Select a chapter</option>
+              <option value="">All Chapters</option>
               {chapters.map((chapter) => (
                 <option key={chapter.id} value={chapter.id}>
                   {chapter.title}
@@ -119,7 +134,7 @@ export const AdminExercisesPage = () => {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ chapter_id: formData.chapter_id, question: '', type: 'radio', options: '[]', correct_answer: '', points: 1 });
+              setFormData({ chapter_id: selectedChapterId || '', question: '', type: 'radio', options: '[]', correct_answer: '', points: 1 });
             }}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
@@ -132,6 +147,22 @@ export const AdminExercisesPage = () => {
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Chapter</label>
+                  <select
+                    value={formData.chapter_id || ''}
+                    onChange={(e) => setFormData({ ...formData, chapter_id: e.target.value ? parseInt(e.target.value) : '' })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a chapter</option>
+                    {chapters.map((chapter) => (
+                      <option key={chapter.id} value={chapter.id}>
+                        {chapter.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Question</label>
                   <input
                     type="text"
@@ -141,6 +172,9 @@ export const AdminExercisesPage = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
                   <select
@@ -153,6 +187,15 @@ export const AdminExercisesPage = () => {
                     <option value="text">Text</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Points</label>
+                  <input
+                    type="number"
+                    value={formData.points}
+                    onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value) })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -163,15 +206,6 @@ export const AdminExercisesPage = () => {
                     value={formData.correct_answer}
                     onChange={(e) => setFormData({ ...formData, correct_answer: e.target.value })}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Points</label>
-                  <input
-                    type="number"
-                    value={formData.points}
-                    onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value) })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -198,32 +232,38 @@ export const AdminExercisesPage = () => {
         )}
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          {exercises.length === 0 ? (
+          {exercisesLoading ? (
             <div className="p-8 text-center text-gray-600">
-              <p>No exercises found for this chapter</p>
+              <p>Loading exercises...</p>
+            </div>
+          ) : filteredExercises.length === 0 ? (
+            <div className="p-8 text-center text-gray-600">
+              <p>No exercises found</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Course</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Chapter</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Question</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Answer</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Points</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {exercises.map((exercise) => (
+                  {filteredExercises.map((exercise) => (
                     <tr key={exercise.id} className="border-b hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm text-gray-800">{exercise.course_title}</td>
+                      <td className="px-6 py-4 text-sm text-gray-800">{exercise.chapter_title}</td>
                       <td className="px-6 py-4 text-sm text-gray-800">{exercise.question}</td>
                       <td className="px-6 py-4 text-sm">
                         <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">{exercise.type}</span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{exercise.correct_answer}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{exercise.points}</td>
-                      <td className="px-6 py-4 text-sm space-x-2">
+                      <td className="px-6 py-4 text-sm">
                         <button
                           onClick={() => handleDelete(exercise.id)}
                           className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"

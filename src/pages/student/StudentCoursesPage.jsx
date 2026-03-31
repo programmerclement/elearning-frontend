@@ -58,13 +58,22 @@ export const StudentCoursesPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {enrolledCourses.map((course) => (
                 <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                  {course.thumbnail && (
-                    <img
-                      src={course.thumbnail}
-                      alt={course.title}
-                      className="w-full h-40 object-cover rounded-t-lg"
-                    />
-                  )}
+                  <div className="relative w-full h-40 bg-gradient-to-br from-blue-400 to-purple-500 overflow-hidden rounded-t-lg flex items-center justify-center">
+                    {course.thumbnail ? (
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.parentElement.style.background = 'linear-gradient(135deg, rgb(96, 165, 250) 0%, rgb(168, 85, 247) 100%)';
+                        }}
+                      />
+                    ) : null}
+                    {!course.thumbnail && (
+                      <div className="text-white text-5xl">📚</div>
+                    )}
+                  </div>
                   <div className="p-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">{course.title}</h3>
                     <p className="text-sm text-gray-600 line-clamp-2 mb-3">{course.description}</p>
@@ -151,13 +160,22 @@ export const StudentCoursesPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {availableCourses.map((course) => (
                 <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                  {course.thumbnail && (
-                    <img
-                      src={course.thumbnail}
-                      alt={course.title}
-                      className="w-full h-40 object-cover rounded-t-lg"
-                    />
-                  )}
+                  <div className="relative w-full h-40 bg-gradient-to-br from-green-400 to-teal-500 overflow-hidden rounded-t-lg flex items-center justify-center">
+                    {course.thumbnail ? (
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.parentElement.style.background = 'linear-gradient(135deg, rgb(74, 222, 128) 0%, rgb(20, 184, 166) 100%)';
+                        }}
+                      />
+                    ) : null}
+                    {!course.thumbnail && (
+                      <div className="text-white text-5xl">🎓</div>
+                    )}
+                  </div>
                   <div className="p-6">
                     <div className="mb-3">
                       <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">

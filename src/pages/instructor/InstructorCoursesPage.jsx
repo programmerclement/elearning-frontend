@@ -119,9 +119,10 @@ export const InstructorCoursesPage = () => {
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Title</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Category</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Price</th>
                     <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Status</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Enrolled</th>
                     <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Chapters</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Exercises</th>
                     <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Actions</th>
                   </tr>
                 </thead>
@@ -137,9 +138,6 @@ export const InstructorCoursesPage = () => {
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {course.category || 'Uncategorized'}
                       </td>
-                      <td className="px-6 py-4 text-sm font-semibold text-gray-900">
-                        ${(Number(course.price) || 0).toFixed(2)}
-                      </td>
                       <td className="px-6 py-4 text-center">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -154,7 +152,19 @@ export const InstructorCoursesPage = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center text-sm font-medium text-gray-600">
-                        {course.chapters?.length || 0}
+                        <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                          {course.enrolled_users || 0}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm font-medium text-gray-600">
+                        <span className="inline-block px-2 py-1 bg-purple-100 text-purple-800 rounded">
+                          {course.total_chapters || 0}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm font-medium text-gray-600">
+                        <span className="inline-block px-2 py-1 bg-orange-100 text-orange-800 rounded">
+                          {course.total_exercises || 0}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">

@@ -110,26 +110,26 @@ const Step2LessonPrep = ({ formData, setFormData, errors }) => {
   const currentChapter = selectedChapterIdx !== null ? formData.chapters[selectedChapterIdx] : null;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Lesson Preparation</h2>
-      <p className="text-gray-600">Create chapters and add exercises for each chapter</p>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Lesson Preparation</h2>
+      <p className="text-xs sm:text-base text-gray-600">Create chapters and add exercises for each chapter</p>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Chapters List */}
-        <div className="col-span-1 border-r pr-6">
-          <h3 className="text-lg font-semibold mb-4">Chapters</h3>
+        <div className="col-span-1 border-b lg:border-b-0 lg:border-r pb-4 lg:pb-0 lg:pr-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-4">Chapters</h3>
           <div className="space-y-2 mb-4 max-h-96 overflow-y-auto">
             {formData.chapters.map((ch, idx) => (
               <div
                 key={idx}
                 onClick={() => setSelectedChapterIdx(idx)}
-                className={`p-3 rounded-lg cursor-pointer transition ${
+                className={`p-2 sm:p-3 rounded-lg cursor-pointer transition ${
                   selectedChapterIdx === idx
                     ? 'bg-blue-100 border-2 border-blue-500'
                     : 'bg-gray-100 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                <p className="font-medium text-sm">{ch.title}</p>
+                <p className="font-medium text-xs sm:text-sm">{ch.title}</p>
                 <p className="text-xs text-gray-600 mt-1">Week {ch.week_number || '-'}</p>
                 <p className="text-xs text-gray-600">{ch.exercises?.length || 0} exercises</p>
               </div>
@@ -154,20 +154,20 @@ const Step2LessonPrep = ({ formData, setFormData, errors }) => {
         </div>
 
         {/* Main Content */}
-        <div className="col-span-2">
+        <div className="col-span-1 lg:col-span-2">
           {/* Add Chapter Form */}
           {showChapterForm && (
-            <div className="bg-gray-50 p-6 rounded-lg mb-6 border border-gray-300">
-              <h4 className="font-semibold mb-4">New Chapter</h4>
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-lg mb-6 border border-gray-300">
+              <h4 className="text-base sm:text-lg font-semibold mb-4">New Chapter</h4>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Chapter Title *</label>
+                  <label className="block text-xs sm:text-sm font-medium mb-1">Chapter Title *</label>
                   <input
                     type="text"
                     value={newChapter.title}
                     onChange={(e) => setNewChapter({ ...newChapter, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg"
                     placeholder="e.g., Getting Started"
                   />
                 </div>
@@ -248,20 +248,20 @@ const Step2LessonPrep = ({ formData, setFormData, errors }) => {
           {/* Chapter Details & Exercises */}
           {currentChapter && (
             <div>
-              <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                <h4 className="font-semibold mb-2">Week {currentChapter.week_number}: {currentChapter.title}</h4>
-                <p className="text-sm text-gray-700">{currentChapter.subtitle}</p>
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg mb-6">
+                <h4 className="text-base sm:text-lg font-semibold mb-2">Week {currentChapter.week_number}: {currentChapter.title}</h4>
+                <p className="text-xs sm:text-sm text-gray-700">{currentChapter.subtitle}</p>
               </div>
 
-              <h4 className="font-semibold mb-4">Exercises</h4>
+              <h4 className="text-base sm:text-lg font-semibold mb-4">Exercises</h4>
 
               {/* Exercises List */}
               <div className="space-y-3 mb-6 max-h-48 overflow-y-auto">
                 {currentChapter.exercises?.map((ex, idx) => (
                   <div key={idx} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start gap-2">
                       <div className="flex-1">
-                        <p className="font-medium text-sm">{ex.question}</p>
+                        <p className="font-medium text-xs sm:text-sm">{ex.question}</p>
                         <p className="text-xs text-gray-600 mt-1">Type: {ex.type} | Points: {ex.points}</p>
                       </div>
                       <button

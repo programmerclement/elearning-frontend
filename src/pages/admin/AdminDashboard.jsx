@@ -239,12 +239,12 @@ const CourseAnalytics = () => {
 
   const sortedCourses = [...courses]
     .sort((a, b) => {
-      if (sortBy === 'revenue') {
-        return (b.price || 0) - (a.price || 0);
+      if (sortBy === 'chapters') {
+        return (b.total_chapters || 0) - (a.total_chapters || 0);
       } else if (sortBy === 'rating') {
-        return (b.rating || 0) - (a.rating || 0);
+        return (Number(b.avg_rating) || 0) - (Number(a.avg_rating) || 0);
       }
-      return (b.enrollments || 0) - (a.enrollments || 0);
+      return (b.enrollment_count || 0) - (a.enrollment_count || 0);
     })
     .slice(0, 10);
 
@@ -258,7 +258,7 @@ const CourseAnalytics = () => {
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="enrollments">Top by Enrollments</option>
-          <option value="revenue">Top by Revenue Potential</option>
+          <option value="chapters">Top by Chapters</option>
           <option value="rating">Top by Rating</option>
         </select>
       </div>
@@ -269,10 +269,10 @@ const CourseAnalytics = () => {
             <tr className="bg-gray-100 border-b border-gray-200">
               <th className="px-4 py-3 text-left font-semibold text-gray-700">Course Name</th>
               <th className="px-4 py-3 text-left font-semibold text-gray-700">Instructor</th>
+              <th className="px-4 py-3 text-center font-semibold text-gray-700">Chapters</th>
+              <th className="px-4 py-3 text-center font-semibold text-gray-700">Exercises</th>
               <th className="px-4 py-3 text-center font-semibold text-gray-700">Enrollments</th>
               <th className="px-4 py-3 text-center font-semibold text-gray-700">Rating</th>
-              <th className="px-4 py-3 text-center font-semibold text-gray-700">Price</th>
-              <th className="px-4 py-3 text-center font-semibold text-gray-700">Revenue</th>
               <th className="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
             </tr>
           </thead>
@@ -297,34 +297,34 @@ const CourseAnalytics = () => {
                       {course.thumbnail && (
                         <img
                           src={course.thumbnail}
-                          alt={course.name}
+                          alt={course.title}
                           className="w-8 h-8 rounded object-cover"
                         />
                       )}
                       <span className="font-semibold text-gray-900 max-w-xs truncate">
-                        {course.name}
+                        {course.title}
                       </span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{course.instructor_name || 'N/A'}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className="font-semibold text-blue-600">
+                    <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
+                      {course.total_chapters || 0}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">
+                      {course.total_exercises || 0}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="font-semibold text-indigo-600">
                       {course.enrollment_count || 0}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="font-semibold text-yellow-600">
-                      ⭐ {course.rating ? course.rating.toFixed(1) : 'N/A'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="font-semibold text-green-600">
-                      ${course.price || 0}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="font-semibold text-purple-600">
-                      ${((course.price || 0) * (course.enrollment_count || 0)).toFixed(2)}
+                      ⭐ {course.avg_rating ? Number(course.avg_rating).toFixed(1) : 'N/A'}
                     </span>
                   </td>
                   <td className="px-4 py-3">

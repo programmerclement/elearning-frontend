@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
-import { useCourses, useCourseReviews, useUserCourseReview, useCreateReview, useUpdateReview, useDeleteReview, useCourseProgress } from '../../hooks/useApi';
+import { useCourse, useCourseReviews, useUserCourseReview, useCreateReview, useUpdateReview, useDeleteReview, useCourseProgress } from '../../hooks/useApi';
 
 export const StudentCourseDetailsPage = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
-  const { data: coursesData } = useCourses();
-  const { data: reviewsData, isLoading: reviewsLoading } = useCourseReviews(courseId);
-  const { data: userReview, isLoading: userReviewLoading } = useUserCourseReview(courseId);
-  const { data: progressData, isLoading: progressLoading } = useCourseProgress(courseId);
+  const { data: courseData, isLoading: courseLoading } = useCourse(parseInt(courseId));
+  const { data: reviewsData, isLoading: reviewsLoading, refetch: refetchReviews } = useCourseReviews(parseInt(courseId));
+  const { data: userReview, isLoading: userReviewLoading, refetch: refetchUserReview } = useUserCourseReview(parseInt(courseId));
+  const { data: progressData, isLoading: progressLoading } = useCourseProgress(parseInt(courseId));
   
   const createReviewMutation = useCreateReview();
   const updateReviewMutation = useUpdateReview();
@@ -21,11 +23,19 @@ export const StudentCourseDetailsPage = () => {
   const [comment, setComment] = useState(userReview?.comment || '');
   const [hoveredRating, setHoveredRating] = useState(0);
 
-  const course = coursesData?.data?.find(c => c.id === parseInt(courseId));
+  const course = courseData?.data || courseData;
   const reviews = reviewsData?.reviews || [];
-  const stats = reviewsData?.stats || {};
-  const progress = progressData?.progress || [];
-  const progressPercentage = progressData?.percentage || 0;
+  const stats = reviewsData?.stats || { total_reviews: 0, average_rating: null };
+  const progress = progressData?.data?.progress || progressData?.progress || [];
+  const progressPercentage = progressData?.data?.percentage || progressData?.percentage || 0;
+
+  // Update form when userReview changes
+  useEffect(() => {
+    if (userReview) {
+      setRating(userReview.rating || 0);
+      setComment(userReview.comment || '');
+    }
+  }, [userReview]);
 
   const handleSubmitReview = async () => {
     if (!rating) return;
@@ -43,6 +53,9 @@ export const StudentCourseDetailsPage = () => {
           comment: comment || null,
         });
       }
+      // Refetch reviews and user review after submission
+      await refetchReviews();
+      await refetchUserReview();
       alert('Review submitted successfully!');
     } catch (err) {
       alert('Error submitting review');
@@ -54,17 +67,33 @@ export const StudentCourseDetailsPage = () => {
     if (window.confirm('Delete your review?')) {
       try {
         await deleteReviewMutation.mutateAsync(userReview.id);
+        // Refetch after deletion
+        await refetchReviews();
+        await refetchUserReview();
+        setRating(0);
+        setComment('');
       } catch (err) {
         alert('Error deleting review');
       }
     }
   };
 
+  if (courseLoading) {
+    return (
+      <DashboardLayout>
+        <div className="p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600 mt-4">Loading course details...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (!course) {
     return (
       <DashboardLayout>
         <div className="p-8 text-center">
-          <p className="text-gray-600">Course not found</p>
+          <p className="text-gray-600 mb-4 text-lg">Course not found</p>
           <button
             onClick={() => navigate('/student/courses')}
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg"
@@ -81,51 +110,60 @@ export const StudentCourseDetailsPage = () => {
       <div className="p-4 lg:p-8 max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8 bg-white rounded-lg shadow-md p-6">
-          {course.thumbnail && (
-            <img
-              src={course.thumbnail}
-              alt={course.title}
-              className="w-full h-64 object-cover rounded-lg mb-4"
-            />
-          )}
+          <div className="relative w-full h-64 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+            {course.thumbnail ? (
+              <img
+                src={course.thumbnail}
+                alt={course.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            ) : null}
+            {!course.thumbnail && (
+              <div className="text-white text-6xl">📚</div>
+            )}
+          </div>
+          
           <h1 className="text-4xl font-bold text-gray-800 mb-2">{course.title}</h1>
           <p className="text-gray-600 mb-4">{course.description}</p>
 
           {/* Progress Bar */}
-          <div className="mb-4">
+          <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">Course Progress</span>
-              <span className="text-sm font-bold text-blue-600">{progressPercentage}%</span>
+              <span className="text-sm font-medium text-gray-700">📊 Course Progress</span>
+              <span className="text-sm font-bold text-blue-600">{Math.round(progressPercentage)}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div
                 className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all"
-                style={{ width: `${progressPercentage}%` }}
+                style={{ width: `${Math.round(progressPercentage)}%` }}
               />
             </div>
           </div>
 
           {/* Course Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <p className="text-xs text-gray-600">Chapters Completed</p>
-              <p className="text-2xl font-bold text-blue-600">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+              <p className="text-xs text-gray-600 font-medium">📚 Chapters Completed</p>
+              <p className="text-3xl font-bold text-blue-600 mt-2">
                 {progress.filter(p => p.completed).length}/{progress.length}
               </p>
             </div>
-            <div className="bg-green-50 p-3 rounded-lg">
-              <p className="text-xs text-gray-600">Average Rating</p>
-              <p className="text-2xl font-bold text-green-600">
-                {stats.average_rating ? stats.average_rating.toFixed(1) : 'N/A'}
+            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+              <p className="text-xs text-gray-600 font-medium">⭐ Average Rating</p>
+              <p className="text-3xl font-bold text-green-600 mt-2">
+                {stats.average_rating ? Number(stats.average_rating).toFixed(1) : 'N/A'}
               </p>
             </div>
-            <div className="bg-purple-50 p-3 rounded-lg">
-              <p className="text-xs text-gray-600">Total Reviews</p>
-              <p className="text-2xl font-bold text-purple-600">{stats.total_reviews || 0}</p>
+            <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+              <p className="text-xs text-gray-600 font-medium">💬 Total Reviews</p>
+              <p className="text-3xl font-bold text-purple-600 mt-2">{stats.total_reviews || 0}</p>
             </div>
-            <div className="bg-orange-50 p-3 rounded-lg">
-              <p className="text-xs text-gray-600">Difficulty Level</p>
-              <p className="text-2xl font-bold text-orange-600">{course.level || 'Beginner'}</p>
+            <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
+              <p className="text-xs text-gray-600 font-medium">🎯 Difficulty Level</p>
+              <p className="text-3xl font-bold text-orange-600 mt-2 capitalize">{course.level || 'Beginner'}</p>
             </div>
           </div>
         </div>
@@ -281,6 +319,28 @@ export const StudentCourseDetailsPage = () => {
                     {userReview ? 'Your Review' : 'Leave a Review'}
                   </h3>
 
+                  {/* Display Current Review */}
+                  {userReview && (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <span key={i} className={i < (userReview.rating || 0) ? 'text-yellow-400 text-lg' : 'text-gray-300 text-lg'}>
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          Posted {new Date(userReview.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {userReview.comment && (
+                        <p className="text-gray-700 text-sm mb-2">{userReview.comment}</p>
+                      )}
+                      <p className="text-xs text-green-700 font-medium">✓ Review saved successfully</p>
+                    </div>
+                  )}
+
                   {/* Rating Selector */}
                   <div>
                     <p className="text-sm font-medium text-gray-700 mb-2">Rating</p>
@@ -343,12 +403,6 @@ export const StudentCourseDetailsPage = () => {
                       </button>
                     )}
                   </div>
-
-                  {userReview && (
-                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-                      ✓ You have already reviewed this course
-                    </div>
-                  )}
                 </div>
               )}
             </div>

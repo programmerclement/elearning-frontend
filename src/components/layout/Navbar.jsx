@@ -63,7 +63,7 @@ export const Navbar = ({ onToggleSidebar }) => {
               />
             </svg>
           </button>
-          <h1 className="text-xl lg:text-2xl font-bold text-blue-600">E-Learning</h1>
+          <h1 className="text-xl lg:text-2xl font-bold text-blue-600">Academia</h1>
         </div>
 
         {/* Right: User Menu */}

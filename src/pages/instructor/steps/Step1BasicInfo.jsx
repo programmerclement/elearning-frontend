@@ -33,9 +33,11 @@ const Step1BasicInfo = ({ formData, setFormData, errors }) => {
   ];
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Basic Course Information</h2>
-      <p className="text-gray-600">Tell us about your course and who it's for</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Basic Course Information</h2>
+        <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">Tell us about your course and who it's for</p>
+      </div>
 
       {/* Course Title */}
       <div>
@@ -47,12 +49,12 @@ const Step1BasicInfo = ({ formData, setFormData, errors }) => {
           name="title"
           value={formData.title}
           onChange={handleChange}
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+          className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
             errors.title ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="e.g., Mastering React.js"
         />
-        {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+        {errors.title && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.title}</p>}
       </div>
 
       {/* Course Description */}
@@ -65,13 +67,13 @@ const Step1BasicInfo = ({ formData, setFormData, errors }) => {
           value={formData.description}
           onChange={handleChange}
           rows="4"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
           placeholder="Describe what students will learn in this course"
         />
       </div>
 
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-2 gap-6">
+      {/* Two Column Layout - Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {/* Category */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -81,7 +83,7 @@ const Step1BasicInfo = ({ formData, setFormData, errors }) => {
             name="category"
             value={formData.category}
             onChange={handleChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
               errors.category ? 'border-red-500' : 'border-gray-300'
             }`}
           >
@@ -90,7 +92,7 @@ const Step1BasicInfo = ({ formData, setFormData, errors }) => {
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
-          {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+          {errors.category && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.category}</p>}
         </div>
 
         {/* Language */}

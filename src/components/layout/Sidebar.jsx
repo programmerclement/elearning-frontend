@@ -11,6 +11,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Dashboard', path: '/student/dashboard', icon: 'Dashboard' },
     { name: 'My Courses', path: '/student/courses', icon: 'Courses' },
     { name: 'My Progress', path: '/student/progress', icon: 'Progress' },
+    { name: 'Payments', path: '/student/payments', icon: 'Invoices' },
   ];
 
   const instructorMenuItems = [
@@ -113,7 +114,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         {/* Footer */}
         <div className="p-4 border-t border-gray-700 flex-shrink-0">
           <p className="text-xs text-gray-400 text-center">
-            E-Learning Platform v1.0
+            Academia Platform v1.0
           </p>
         </div>
       </aside>

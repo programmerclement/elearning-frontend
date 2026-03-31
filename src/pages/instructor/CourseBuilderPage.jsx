@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import axiosInstance from '../../api/client';
 import Step1BasicInfo from './steps/Step1BasicInfo';
 import Step2LessonPrep from './steps/Step2LessonPrep';
@@ -101,7 +102,7 @@ export const CourseBuilderPage = () => {
         return false;
       }
 
-      const response = await axiosInstance.post('/api/courses', {
+      const response = await axiosInstance.post('/courses', {
         title: formData.title.trim(),
         description: formData.description.trim(),
         category: formData.category,
@@ -169,7 +170,7 @@ export const CourseBuilderPage = () => {
 
           try {
             const chapterRes = await axiosInstance.post(
-              `/api/courses/${formData.courseId}/chapters`,
+              `/courses/${formData.courseId}/chapters`,
               formDataChapter,
               { headers: { 'Content-Type': 'multipart/form-data' } }
             );
@@ -182,7 +183,7 @@ export const CourseBuilderPage = () => {
                 if (exercise.isNew || !exercise.id) {
                   try {
                     await axiosInstance.post(
-                      `/api/chapters/${chapterId}/exercises`,
+                      `/chapters/${chapterId}/exercises`,
                       {
                         question: exercise.question,
                         type: exercise.type,
@@ -219,7 +220,7 @@ export const CourseBuilderPage = () => {
   const fetchInvoicePreview = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get('/api/invoices/preview', {
+      const response = await axiosInstance.get('/invoices/preview', {
         params: {
           course_id: formData.courseId,
           coupon_code: formData.coupon_code || undefined,
@@ -236,21 +237,45 @@ export const CourseBuilderPage = () => {
     }
   };
 
+  const handleApplyCoupon = async (couponCode) => {
+    try {
+      const response = await axiosInstance.get('/invoices/preview', {
+        params: {
+          course_id: formData.courseId,
+          coupon_code: couponCode,
+        }
+      });
+      const invoiceData = response.data?.data || response.data;
+      setInvoicePreview(invoiceData);
+    } catch (err) {
+      setErrors({ submit: err.response?.data?.message || 'Coupon not found or invalid' });
+      throw err;
+    }
+  };
+
   const handleFinish = async () => {
     try {
       setLoading(true);
-      // Process payment
-      const paymentRes = await axiosInstance.post('/api/payments', {
-        course_id: formData.courseId,
-        payment_method: formData.payment_method,
-        coupon_code: formData.coupon_code || undefined,
-      });
+      setErrors({});
+      
+      if (!formData.courseId) {
+        setErrors({ submit: 'Course ID not found' });
+        return;
+      }
 
-      if (paymentRes.data.success) {
-        navigate(`/instructor/courses/${formData.courseId}/review`);
+      // Publish the course
+      const publishRes = await axiosInstance.put(`/courses/${formData.courseId}/publish`, {});
+      
+      if (publishRes.data?.success || publishRes.data?.data) {
+        // Show success and redirect
+        alert('🎉 Course published successfully!');
+        navigate('/instructor/dashboard', { replace: true });
+      } else {
+        setErrors({ submit: 'Failed to publish course' });
       }
     } catch (err) {
-      setErrors({ submit: err.response?.data?.message || 'Payment failed' });
+      console.error('Publish error:', err);
+      setErrors({ submit: err.message || 'Failed to publish course. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -259,34 +284,48 @@ export const CourseBuilderPage = () => {
   const progressPercentage = (currentStep / 4) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Course</h1>
-          <p className="text-gray-600 mt-2">Follow the steps below to create and publish your course</p>
+    <DashboardLayout>
+      <div className="min-h-full bg-gradient-to-b from-blue-50 to-white">
+        {/* Header with Back Button */}
+        <div className="bg-white shadow-sm border-b sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <div className="flex items-center gap-3 mb-2">
+              <button
+                onClick={() => navigate('/instructor/dashboard')}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition text-gray-600 hover:text-gray-900"
+                title="Back to Dashboard"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Create New Course</h1>
+                <p className="text-sm sm:text-base text-gray-600 mt-1">Step {currentStep} of 4: {['Basic Info', 'Lessons', 'Pricing', 'Review'][currentStep - 1]}</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Progress Bar */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex justify-between mb-4">
-            <StepIndicator number={1} title="Basic Info" active={currentStep === 1} completed={currentStep > 1} />
+        {/* Progress Bar */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4">
+            <StepIndicator number={1} title="Basic" active={currentStep === 1} completed={currentStep > 1} />
             <StepIndicator number={2} title="Lessons" active={currentStep === 2} completed={currentStep > 2} />
             <StepIndicator number={3} title="Pricing" active={currentStep === 3} completed={currentStep > 3} />
             <StepIndicator number={4} title="Review" active={currentStep === 4} completed={currentStep > 4} />
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 md:p-8 mb-6">
           {errors.submit && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-700 font-semibold mb-2">Error:</p>
@@ -305,53 +344,61 @@ export const CourseBuilderPage = () => {
               formData={formData}
               setFormData={setFormData}
               invoicePreview={invoicePreview}
+              setInvoicePreview={setInvoicePreview}
+              onApplyCoupon={handleApplyCoupon}
               errors={errors}
             />
           )}
           {currentStep === 4 && (
-            <Step4Review formData={formData} invoicePreview={invoicePreview} />
+            <Step4Review 
+              formData={formData} 
+              invoicePreview={invoicePreview}
+              onPublish={handleFinish}
+              isPublishing={loading}
+            />
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-8 border-t">
+          <div className="flex flex-col sm:flex-row justify-between gap-3 mt-8 pt-8 border-t">
             <button
               onClick={handlePrevious}
               disabled={currentStep === 1}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition"
             >
-              Previous
+              ← Previous
             </button>
-            <div className="space-x-4">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               {currentStep < 4 && (
                 <button
                   onClick={handleNext}
                   disabled={loading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition"
                 >
-                  {loading ? 'Loading...' : 'Next'}
+                  {loading ? '⏳ Loading...' : 'Next →'}
                 </button>
               )}
               {currentStep === 4 && (
                 <button
                   onClick={handleFinish}
                   disabled={loading}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition"
                 >
-                  {loading ? 'Processing...' : 'Publish Course'}
+                  {loading ? '🔄 Publishing...' : '🚀 Publish Course'}
                 </button>
               )}
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
 const StepIndicator = ({ number, title, active, completed }) => (
   <div className="flex flex-col items-center">
     <div
-      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all ${
+      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg transition-all ${
         completed
           ? 'bg-green-500 text-white'
           : active
@@ -361,6 +408,6 @@ const StepIndicator = ({ number, title, active, completed }) => (
     >
       {completed ? '✓' : number}
     </div>
-    <p className={`text-sm font-medium mt-2 ${active ? 'text-blue-600' : 'text-gray-600'}`}>{title}</p>
+    <p className={`text-xs sm:text-sm font-medium mt-1.5 sm:mt-2 text-center max-w-[60px] ${active ? 'text-blue-600' : 'text-gray-600'}`}>{title}</p>
   </div>
 );
