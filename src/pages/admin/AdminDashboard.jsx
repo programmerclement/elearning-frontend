@@ -433,7 +433,7 @@ export const AdminDashboard = () => {
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg shadow p-6 border border-purple-200">
                 <p className="text-gray-700 text-sm font-medium">Total Revenue</p>
                 <p className="text-4xl font-bold text-purple-600 mt-2">
-                  ${(Number(data?.data?.revenue?.total_revenue) || 0).toFixed(2)}
+                  {(Number(data?.data?.revenue?.total_revenue) || 0).toFixed(2)} RWF
                 </p>
               </div>
 
@@ -523,7 +523,7 @@ export const AdminDashboard = () => {
                   <div className="flex justify-between items-center pb-3 border-b">
                     <span className="text-gray-600">Total Revenue</span>
                     <span className="font-semibold text-green-600">
-                      ${(Number(data?.data?.revenue?.total_revenue) || 0).toFixed(2)}
+                      {(Number(data?.data?.revenue?.total_revenue) || 0).toFixed(2)} RWF
                     </span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b">
@@ -533,11 +533,11 @@ export const AdminDashboard = () => {
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-gray-600">Avg Transaction</span>
                     <span className="font-semibold">
-                      ${(
+                      {(
                         (Number(data?.data?.revenue?.total_transactions) || 0) > 0
                           ? Number(data?.data?.revenue?.total_revenue) / Number(data?.data?.revenue?.total_transactions)
                           : 0
-                      ).toFixed(2)}
+                      ).toFixed(2)} RWF
                     </span>
                   </div>
                 </div>

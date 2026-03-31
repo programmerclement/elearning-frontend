@@ -451,4 +451,10 @@ export const couponAPI = {
     const response = await apiClient.post(`/coupons/${couponId}/apply`, { order_id: orderId });
     return response.data;
   },
+
+  // Verify coupon is valid and active (public endpoint)
+  verifyCoupon: async (couponCode) => {
+    const response = await apiClient.get(`/coupons/verify/${couponCode}`);
+    return response.data;
+  },
 };

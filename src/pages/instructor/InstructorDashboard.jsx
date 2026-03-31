@@ -172,7 +172,7 @@ export const InstructorDashboard = () => {
                           <div className="space-y-2 mb-4 text-xs">
                             <div className="flex justify-between">
                               <span className="text-gray-600">Price:</span>
-                              <span className="font-bold text-blue-600">${(Number(course.price) || 0).toFixed(2)}</span>
+                              <span className="font-bold text-blue-600">{(Number(course.price) || 0).toFixed(2)} RWF</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Status:</span>

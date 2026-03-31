@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
 /**
- * Format price as USD currency
+ * Format price as RWF currency
  */
 const formatPrice = (value) => {
   const num = parseFloat(value) || 0;
-  return num.toFixed(2);
+  return `${num.toFixed(2)} RWF`;
 };
 
 /**
@@ -147,7 +147,7 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, setInvoicePreview
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-gray-700">Original Price:</span>
                     <span className="font-semibold">
-                      ${formatPrice(invoicePreview.original_price)}
+                      {formatPrice(invoicePreview.original_price)}
                     </span>
                   </div>
 
@@ -155,7 +155,7 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, setInvoicePreview
                     <div className="flex justify-between items-center text-xs sm:text-sm text-green-600">
                       <span>Discount ({invoicePreview.coupon?.discount_percentage}%):</span>
                       <span className="font-semibold">
-                        -${formatPrice(invoicePreview.discount_amount)}
+                        -{formatPrice(invoicePreview.discount_amount)}
                       </span>
                     </div>
                   )}
@@ -163,21 +163,21 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, setInvoicePreview
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-gray-700">Subtotal:</span>
                     <span className="font-semibold">
-                      ${formatPrice(invoicePreview.subtotal)}
+                      {formatPrice(invoicePreview.subtotal)}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-gray-700">Service Fee (5%):</span>
                     <span className="font-semibold">
-                      ${formatPrice(invoicePreview.service_fee)}
+                      {formatPrice(invoicePreview.service_fee)}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-gray-700">VAT (15%):</span>
                     <span className="font-semibold">
-                      ${formatPrice(invoicePreview.vat)}
+                      {formatPrice(invoicePreview.vat)}
                     </span>
                   </div>
                 </div>
@@ -186,14 +186,14 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, setInvoicePreview
                 <div className="flex justify-between items-center pt-4">
                   <span className="text-base sm:text-xl font-bold text-gray-900">Total Amount:</span>
                   <span className="text-2xl sm:text-3xl font-bold text-blue-600">
-                    ${formatPrice(invoicePreview.total)}
+                    {formatPrice(invoicePreview.total)}
                   </span>
                 </div>
 
                 {/* Savings Badge */}
                 {invoicePreview.discount_amount > 0 && (
                   <div className="mt-4 p-3 bg-green-100 border border-green-400 rounded-lg text-green-800 text-xs sm:text-sm text-center font-semibold">
-                    💰 You save ${formatPrice(invoicePreview.discount_amount)} with this coupon!
+                    💰 You save {formatPrice(invoicePreview.discount_amount)} with this coupon!
                   </div>
                 )}
 
@@ -201,7 +201,7 @@ const Step3Pricing = ({ formData, setFormData, invoicePreview, setInvoicePreview
                 <div className="mt-6 bg-white rounded-lg p-3 sm:p-4 text-xs sm:text-sm text-gray-600 space-y-1">
                   <p><strong>Payment Terms:</strong> Non-refundable digital product</p>
                   <p><strong>Tax ID:</strong> Will be provided on invoice</p>
-                  <p><strong>Currency:</strong> USD</p>
+                  <p><strong>Currency:</strong> RWF (Rwandan Franc)</p>
                 </div>
               </div>
             ) : (

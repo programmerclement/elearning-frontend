@@ -124,14 +124,14 @@ export default function CourseReviewPage({ courseId, onClose }) {
                 <div>
                   <p className="text-sm text-gray-600">One-Time</p>
                   <p className="text-2xl font-bold text-blue-600">
-                    ${course.price}
+                    {course.price} RWF
                   </p>
                 </div>
                 {course.subscription_price > 0 && (
                   <div>
                     <p className="text-sm text-gray-600">Subscription</p>
                     <p className="text-2xl font-bold text-green-600">
-                      ${course.subscription_price}/mo
+                      {course.subscription_price} RWF/mo
                     </p>
                   </div>
                 )}

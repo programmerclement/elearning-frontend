@@ -141,7 +141,7 @@ export const AdminCoursesPage = () => {
                         {course.instructor_name || 'Unknown'}
                       </td>
                       <td className="px-6 py-4 text-sm font-semibold text-gray-900">
-                        ${(Number(course.price) || 0).toFixed(2)}
+                        {(Number(course.price) || 0).toFixed(2)} RWF
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span

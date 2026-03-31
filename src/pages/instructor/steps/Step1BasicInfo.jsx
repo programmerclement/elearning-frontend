@@ -157,7 +157,7 @@ const Step1BasicInfo = ({ formData, setFormData, errors }) => {
       <div className="grid grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Subscription Price ($) *
+            Subscription Price (RWF) *
           </label>
           <input
             type="number"

@@ -214,7 +214,7 @@ export const InstructorCourseDetailsPage = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-blue-50 rounded-lg p-4">
                 <p className="text-gray-600 text-sm">Price</p>
-                <p className="text-2xl font-bold text-blue-600">${(Number(course.price) || 0).toFixed(2)}</p>
+                <p className="text-2xl font-bold text-blue-600">{(Number(course.price) || 0).toFixed(2)} RWF</p>
               </div>
               <div className="bg-green-50 rounded-lg p-4">
                 <p className="text-gray-600 text-sm">Status</p>

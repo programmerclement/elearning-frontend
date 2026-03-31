@@ -352,8 +352,7 @@ export default function SyllabusBuilder({ onSuccess }) {
                     </p>
                     <div className="space-y-2 mb-4 text-sm">
                       <p>
-                        <span className="font-semibold">Price:</span> $
-                        {syllabus.subscription_price}
+                        <span className="font-semibold">Price:</span> {syllabus.subscription_price} RWF
                       </p>
                       <p>
                         <span className="font-semibold">Level:</span>{' '}

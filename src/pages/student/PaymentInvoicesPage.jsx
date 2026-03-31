@@ -32,7 +32,7 @@ export const PaymentInvoicesPage = () => {
   };
 
   const formatCurrency = (amount) => {
-    return `$${Number(amount).toFixed(2)}`;
+    return `${Number(amount).toFixed(2)} RWF`;
   };
 
   const formatDate = (dateString) => {

@@ -67,7 +67,7 @@ export const AdminInvoicesPage = () => {
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-600 text-sm">Total Revenue</p>
-            <p className="text-3xl font-bold text-purple-600">${stats.totalRevenue.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-purple-600">{stats.totalRevenue.toFixed(2)} RWF</p>
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export const AdminInvoicesPage = () => {
                       <td className="px-6 py-4 text-sm text-gray-600 font-mono">{payment.id}</td>
                       <td className="px-6 py-4 text-sm text-gray-800">{payment.user_name || payment.student_name || 'N/A'}</td>
                       <td className="px-6 py-4 text-sm text-gray-800">{payment.course_title || 'N/A'}</td>
-                      <td className="px-6 py-4 text-sm font-semibold text-gray-800">${parseFloat(payment.amount || 0).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm font-semibold text-gray-800">{parseFloat(payment.amount || 0).toFixed(2)} RWF</td>
                       <td className="px-6 py-4 text-sm">
                         <span className={`px-2 py-1 rounded text-xs font-semibold capitalize ${getStatusColor(payment.status)}`}>
                           {payment.status}

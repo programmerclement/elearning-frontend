@@ -188,7 +188,7 @@ export const StudentCoursesPage = () => {
                     
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <p className="text-lg font-bold text-blue-600">${course.price}</p>
+                        <p className="text-lg font-bold text-blue-600">{course.price} RWF</p>
                         <p className="text-xs text-gray-500">{course.category}</p>
                       </div>
                     </div>

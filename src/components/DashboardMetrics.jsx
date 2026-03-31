@@ -184,7 +184,7 @@ export default function DashboardMetrics() {
                 <div>
                   <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
                   <p className="text-2xl font-bold text-green-600 mt-2">
-                    ${metrics.total_revenue.toFixed(2)}
+                    {metrics.total_revenue.toFixed(2)} RWF
                   </p>
                 </div>
                 <div className="text-3xl">💰</div>

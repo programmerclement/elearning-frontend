@@ -268,7 +268,7 @@ export default function PaymentPage({ courseId, onSuccess }) {
                 <div className="flex justify-between border-b pb-4">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-semibold">
-                    ${invoice.original_price?.toFixed(2) || 0}
+                    {invoice.original_price?.toFixed(2) || 0} RWF
                   </span>
                 </div>
 
@@ -276,7 +276,7 @@ export default function PaymentPage({ courseId, onSuccess }) {
                   <div className="flex justify-between border-b pb-4 text-green-600">
                     <span>Discount ({couponApplied?.discount_percentage}%)</span>
                     <span className="font-semibold">
-                      -${invoice.discount_amount?.toFixed(2) || 0}
+                      -{invoice.discount_amount?.toFixed(2) || 0} RWF
                     </span>
                   </div>
                 )}
@@ -284,21 +284,21 @@ export default function PaymentPage({ courseId, onSuccess }) {
                 <div className="flex justify-between border-b pb-4">
                   <span className="text-gray-600">Service Fee</span>
                   <span className="font-semibold">
-                    ${invoice.service_fee?.toFixed(2) || 0}
+                    {invoice.service_fee?.toFixed(2) || 0} RWF
                   </span>
                 </div>
 
                 <div className="flex justify-between border-b pb-4">
                   <span className="text-gray-600">VAT</span>
                   <span className="font-semibold">
-                    ${invoice.vat?.toFixed(2) || 0}
+                    {invoice.vat?.toFixed(2) || 0} RWF
                   </span>
                 </div>
 
                 <div className="flex justify-between pt-4">
                   <span className="text-xl font-bold">Total</span>
                   <span className="text-xl font-bold text-blue-600">
-                    ${invoice.total?.toFixed(2) || 0}
+                    {invoice.total?.toFixed(2) || 0} RWF
                   </span>
                 </div>
 

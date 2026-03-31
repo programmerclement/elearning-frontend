@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../api/client';
 
 /**
- * Format price as USD currency
+ * Format price as RWF currency
  * Safely converts to number before formatting
  */
 const formatPrice = (value) => {
   const num = parseFloat(value) || 0;
-  return num.toFixed(2);
+  return `${num.toFixed(2)} RWF`;
 };
 
 /**
@@ -106,7 +106,7 @@ const Step4Review = ({ formData, invoicePreview, onPublish, isPublishing }) => {
         />
         <SummaryCard
           label="Price"
-          value={`$${formatPrice(courseData.subscription_price)}`}
+          value={formatPrice(courseData.subscription_price)}
           icon="💰"
         />
       </div>
@@ -165,25 +165,25 @@ const Step4Review = ({ formData, invoicePreview, onPublish, isPublishing }) => {
           <div className="space-y-3">
             <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-gray-700">Subtotal:</span>
-              <span className="font-semibold">${formatPrice(invoicePreview.subtotal)}</span>
+              <span className="font-semibold">{formatPrice(invoicePreview.subtotal)}</span>
             </div>
             <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-gray-700">Service Fee:</span>
-              <span className="font-semibold">${formatPrice(invoicePreview.service_fee)}</span>
+              <span className="font-semibold">{formatPrice(invoicePreview.service_fee)}</span>
             </div>
             <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-gray-700">VAT:</span>
-              <span className="font-semibold">${formatPrice(invoicePreview.vat)}</span>
+              <span className="font-semibold">{formatPrice(invoicePreview.vat)}</span>
             </div>
             {invoicePreview.discount_amount > 0 && (
               <div className="flex justify-between text-xs sm:text-sm text-green-600">
                 <span>Discount:</span>
-                <span className="font-semibold">-${formatPrice(invoicePreview.discount_amount)}</span>
+                <span className="font-semibold">-{formatPrice(invoicePreview.discount_amount)}</span>
               </div>
             )}
             <div className="border-t-2 border-green-300 pt-3 flex justify-between">
               <span className="font-bold text-green-900">Total:</span>
-              <span className="text-lg sm:text-2xl font-bold text-green-600">${formatPrice(invoicePreview.total)}</span>
+              <span className="text-lg sm:text-2xl font-bold text-green-600">{formatPrice(invoicePreview.total)}</span>
             </div>
           </div>
         </div>

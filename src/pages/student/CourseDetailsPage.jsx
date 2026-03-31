@@ -58,7 +58,7 @@ export const CourseDetailsPage = () => {
           <p className="text-gray-600 text-lg mb-4">{course.description}</p>
           <div className="flex gap-4 text-sm text-gray-600">
             <span>👨‍🏫 {course.instructor_name || 'Instructor'}</span>
-            <span>💰 ${(Number(course.price) || 0).toFixed(2)}</span>
+            <span>💰 {(Number(course.price) || 0).toFixed(2)} RWF</span>
             <span>📊 {course.level || 'Beginner'}</span>
           </div>
         </div>

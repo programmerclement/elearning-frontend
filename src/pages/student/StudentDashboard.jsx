@@ -55,7 +55,7 @@ export const StudentDashboard = () => {
 
             <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg shadow p-6 border border-red-200">
               <p className="text-gray-600 text-sm">Total Spent</p>
-              <p className="text-3xl font-bold text-red-600">${totalSpent.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-red-600">{totalSpent.toFixed(2)} RWF</p>
             </div>
           </div>
         )}
