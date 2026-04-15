@@ -9,7 +9,9 @@ import { RegisterPage } from './pages/auth/Register';
 
 // Student Pages
 import { StudentDashboard } from './pages/student/StudentDashboard';
+import { ProfileSettings } from './pages/student/ProfileSettings';
 import { StudentCoursesPage } from './pages/student/StudentCoursesPage';
+import { StudentProjectsPage } from './pages/student/StudentProjectsPage';
 import { StudentProgressPage } from './pages/student/StudentProgressPage';
 import { StudentCourseDetailsPage } from './pages/student/StudentCourseDetailsPage';
 import { CourseDetailsPage } from './pages/student/CourseDetailsPage';
@@ -95,6 +97,16 @@ function App() {
               }
             />
 
+            {/* Shared Routes */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfileSettings />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Student Routes */}
             <Route
               path="/student/dashboard"
@@ -109,6 +121,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="student">
                   <StudentCoursesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/projects"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentProjectsPage />
                 </ProtectedRoute>
               }
             />

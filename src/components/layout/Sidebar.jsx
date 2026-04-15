@@ -10,6 +10,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
   const studentMenuItems = [
     { name: 'Dashboard', path: '/student/dashboard', icon: 'Dashboard' },
     { name: 'My Courses', path: '/student/courses', icon: 'Courses' },
+    { name: 'My Projects', path: '/student/projects', icon: 'Projects' },
     { name: 'My Progress', path: '/student/progress', icon: 'Progress' },
     { name: 'Payments', path: '/student/payments', icon: 'Invoices' },
   ];

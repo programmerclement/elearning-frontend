@@ -58,6 +58,46 @@ export const useVerifyToken = () => {
 };
 
 // ============================================================================
+// PROJECT HOOKS
+// ============================================================================
+
+export const useMyProjects = () => {
+  return useQuery({
+    queryKey: ['projects', 'my'],
+    queryFn: async () => {
+      const response = await apiClient.get('/projects/my');
+      return response.data;
+    },
+  });
+};
+
+export const useAllProjects = () => {
+  return useQuery({
+    queryKey: ['projects', 'all'],
+    queryFn: async () => {
+      const response = await apiClient.get('/projects');
+      return response.data;
+    },
+  });
+};
+
+export const useCreateProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (formData) => {
+      const response = await apiClient.post('/projects', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', 'my'] });
+      queryClient.invalidateQueries({ queryKey: ['projects', 'all'] });
+    },
+  });
+};
+
+// ============================================================================
 // DASHBOARD HOOKS
 // ============================================================================
 
@@ -676,6 +716,36 @@ export const useAllSyllabusOutlines = () => {
       const response = await apiClient.get('/syllabuses/outlines');
       const data = response.data.data || response.data.outlines || response.data || [];
       return Array.isArray(data) ? data : (data?.outlines || data?.data || []);
+    },
+  });
+};
+
+// ============================================================================
+// USER PROFILE HOOKS
+// ============================================================================
+
+export const useUserProfile = (userId) => {
+  return useQuery({
+    queryKey: ['user', 'profile', userId],
+    queryFn: async () => {
+      const response = await apiClient.get(`/users/${userId}`);
+      return response.data;
+    },
+    enabled: !!userId,
+  });
+};
+
+export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, data }) => {
+      const response = await apiClient.put(`/users/${userId}/profile`, data);
+      return response.data;
+    },
+    onSuccess: (data, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: ['user', 'profile', userId] });
+      queryClient.invalidateQueries({ queryKey: ['auth', 'profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'student'] });
     },
   });
 };

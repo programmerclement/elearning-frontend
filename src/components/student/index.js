@@ -1,0 +1,11 @@
+export { DashboardHeader } from './DashboardHeader';
+export { DashboardStats } from './DashboardStats';
+export { RecentEnrolledCourses } from './RecentEnrolledCourses';
+export { Calendar } from './Calendar';
+export { CertificatesSection } from './CertificatesSection';
+export { CourseCard } from './CourseCard';
+export { CourseProgressSummary } from './CourseProgressSummary';
+export { CoursesSection } from './CoursesSection';
+export { NotificationCenter } from './NotificationCenter';
+export { PaymentStatusCard } from './PaymentStatusCard';
+export { UserProfileBlock } from './UserProfileBlock';
