@@ -1,40 +1,47 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useCreateProject } from '../../hooks/useApi';
+import { useUpdateProject } from '../../hooks/useApi';
 import apiClient from '../../api/client';
 
-export const UploadProjectModal = ({ onClose, onSuccess }) => {
-  const [title, setTitle] = useState('');
-  const [abstract, setAbstract] = useState('');
-  const [images, setImages] = useState([]);
+const BASE_URL = 'http://localhost:3000';
+
+export const EditProjectModal = ({ project, onClose, onSuccess }) => {
+  const [title, setTitle] = useState(project.title || '');
+  const [abstract, setAbstract] = useState(project.abstract || '');
+  const [newImages, setNewImages] = useState([]);
   const [file, setFile] = useState(null);
+  const [existingImages, setExistingImages] = useState(project.images || []);
+  const [deletedImages, setDeletedImages] = useState([]);
   
   // Collaboration states
   const [searchQuery, setSearchQuery] = useState('');
-  const [collaborators, setCollaborators] = useState([]);
+  const [collaborators, setCollaborators] = useState(project.collaborators || []);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
   const fileInputRef = useRef(null);
   const imagesInputRef = useRef(null);
   const searchTimeoutRef = useRef(null);
-  const { mutate: createProject, isPending } = useCreateProject();
+  const { mutate: updateProject, isPending } = useUpdateProject();
 
-  // Validate avatar URL - check if it's a valid and complete data/HTTP URL
+  // Validate avatar URL
   const isValidAvatarUrl = (url) => {
     if (!url || typeof url !== 'string' || !url.trim()) return false;
-    // Check if it's a data URL - should be reasonably long (at least 100 chars for valid base64)
     if (url.startsWith('data:')) {
       return url.length > 100 && url.includes(',');
     }
-    // Check if it's an http URL
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url.length > 10;
     }
-    // Check if it's a relative path
     if (url.startsWith('/')) {
       return url.length > 1;
     }
     return false;
+  };
+
+  const getFullImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${BASE_URL}${imagePath}`;
   };
 
   // Search API call
@@ -52,7 +59,6 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
       setIsSearching(true);
       try {
         const response = await apiClient.get(`/users/search?q=${encodeURIComponent(searchQuery)}`);
-        // Filter out already selected collaborators and the current user
         const results = Array.isArray(response.data?.data) ? response.data.data : [];
         const filtered = results.filter(u => !collaborators.some(c => c.id === u.id));
         setSearchResults(filtered);
@@ -77,12 +83,17 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
     setCollaborators(collaborators.filter(c => c.id !== userId));
   };
 
-  const handleAddImages = (newImages) => {
-    setImages([...images, ...Array.from(newImages)]);
+  const handleAddNewImages = (newFiles) => {
+    setNewImages([...newImages, ...Array.from(newFiles)]);
   };
 
-  const handleRemoveImage = (index) => {
-    setImages(images.filter((_, i) => i !== index));
+  const handleRemoveNewImage = (index) => {
+    setNewImages(newImages.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveExistingImage = (imagePath) => {
+    setDeletedImages([...deletedImages, imagePath]);
+    setExistingImages(existingImages.filter(img => img !== imagePath));
   };
 
   const handleDragOver = (e) => {
@@ -100,7 +111,7 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
     
     if (e.dataTransfer.files) {
       if (isImages) {
-        handleAddImages(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+        handleAddNewImages(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
       } else {
         setFile(e.dataTransfer.files[0]);
       }
@@ -115,8 +126,18 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
     formData.append('abstract', abstract);
     formData.append('collaborators', JSON.stringify(collaborators.map(c => ({ id: c.id, name: c.name }))));
     
-    // Add all images - first one will be thumbnail
-    images.forEach((image) => {
+    // Add IDs of images to delete
+    if (deletedImages.length > 0) {
+      formData.append('deletedImages', JSON.stringify(deletedImages));
+    }
+    
+    // Add existing images that weren't deleted
+    if (existingImages.length > 0) {
+      formData.append('existingImages', JSON.stringify(existingImages));
+    }
+    
+    // Add new images
+    newImages.forEach((image) => {
       formData.append('images', image);
     });
     
@@ -125,12 +146,12 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
       formData.append('file', file);
     }
 
-    createProject(formData, {
+    updateProject({ projectId: project.id, formData }, {
       onSuccess: () => {
         onSuccess();
       },
       onError: (err) => {
-        alert(err.response?.data?.message || 'Failed to upload project');
+        alert(err.response?.data?.message || 'Failed to update project');
       }
     });
   };
@@ -141,7 +162,7 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
         
         {/* Header */}
         <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
-          <h2 className="text-xl font-bold text-slate-800">Upload Project</h2>
+          <h2 className="text-xl font-bold text-slate-800">Edit Project</h2>
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition p-1"
@@ -187,7 +208,7 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
             {/* Collaboration */}
             <div className="relative">
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Add Collaboration
+                Collaborators
               </label>
               
               <div className="flex items-center px-4 py-3 bg-slate-50 border border-slate-100 rounded focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500 focus-within:bg-white transition-colors">
@@ -198,7 +219,7 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="@ - name"
+                  placeholder="Search collaborators..."
                   className="w-full bg-transparent outline-none text-slate-800 placeholder-slate-400"
                 />
               </div>
@@ -254,10 +275,57 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
               )}
             </div>
 
+            {/* Existing Images */}
+            {existingImages.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Current Images
+                  </label>
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    {existingImages.length} image{existingImages.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {existingImages.map((image, idx) => (
+                    <div key={idx} className="relative group">
+                      <img 
+                        src={getFullImageUrl(image)} 
+                        alt={`Current ${idx + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          if (e.target.nextElementSibling) e.target.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div 
+                        className="absolute inset-0 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400"
+                        style={{display: 'none'}}
+                      >
+                        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
+                        </svg>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExistingImage(image)}
+                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                        title="Delete this image"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Multiple Images Upload */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Project Images (Gallery)
+                Add New Images
               </label>
               <div 
                 onDragOver={handleDragOver}
@@ -273,8 +341,8 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
                   accept="image/*"
                   onChange={(e) => {
                     if (e.target.files) {
-                      handleAddImages(Array.from(e.target.files));
-                      e.target.value = ''; // Reset input
+                      handleAddNewImages(Array.from(e.target.files));
+                      e.target.value = '';
                     }
                   }}
                   className="hidden"
@@ -288,38 +356,33 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
                   <p className="text-[15px] font-semibold text-[#1a1a2e]">
                     Drag images or click to upload
                   </p>
-                  <p className="text-[13px] text-slate-500 mt-1">
-                    {images.length > 0 ? `${images.length} image${images.length !== 1 ? 's' : ''} selected` : "First image will be the background"}
-                  </p>
                 </div>
               </div>
 
-              {/* Image Preview */}
-              {images.length > 0 && (
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                  {images.map((image, idx) => (
-                    <div key={idx} className="relative group">
-                      <img 
-                        src={URL.createObjectURL(image)} 
-                        alt={`Preview ${idx + 1}`}
-                        className="w-full h-24 object-cover rounded-lg"
-                      />
-                      {idx === 0 && (
-                        <span className="absolute top-1 left-1 px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded">
-                          Background
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(idx)}
-                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
-                      >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
+              {/* New Image Preview */}
+              {newImages.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-xs text-gray-500 mb-2">{newImages.length} new image{newImages.length !== 1 ? 's' : ''}</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {newImages.map((image, idx) => (
+                      <div key={idx} className="relative group">
+                        <img 
+                          src={URL.createObjectURL(image)} 
+                          alt={`New ${idx + 1}`}
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNewImage(idx)}
+                          className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -327,7 +390,7 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
             {/* Project File Upload */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Project File (Document/Archive)
+                Update Project File (Optional)
               </label>
               <div 
                 onDragOver={handleDragOver}
@@ -342,7 +405,7 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
                   onChange={(e) => {
                     if (e.target.files) {
                       setFile(e.target.files[0]);
-                      e.target.value = ''; // Reset input
+                      e.target.value = '';
                     }
                   }}
                   className="hidden"
@@ -382,7 +445,7 @@ export const UploadProjectModal = ({ onClose, onSuccess }) => {
              className="px-6 py-2 bg-[#4c167b] hover:bg-[#3d1163] text-white font-medium rounded outline-none transition disabled:opacity-50 flex items-center justify-center gap-2"
            >
              {isPending && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>}
-             Save Project
+             Update Project
            </button>
         </div>
 

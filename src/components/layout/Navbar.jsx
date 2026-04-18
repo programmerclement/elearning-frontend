@@ -24,6 +24,24 @@ export const Navbar = ({ onToggleSidebar }) => {
       .slice(0, 2);
   };
 
+  // Validate avatar URL - check if it's a valid and complete data/HTTP URL
+  const isValidAvatarUrl = (url) => {
+    if (!url || typeof url !== 'string' || !url.trim()) return false;
+    // Check if it's a data URL - should be reasonably long (at least 100 chars for valid base64)
+    if (url.startsWith('data:')) {
+      return url.length > 100 && url.includes(',');
+    }
+    // Check if it's an http URL
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url.length > 10;
+    }
+    // Check if it's a relative path
+    if (url.startsWith('/')) {
+      return url.length > 1;
+    }
+    return false;
+  };
+
   // Get background color based on initials
   const getBackgroundColor = (name) => {
     const colors = [
@@ -80,21 +98,25 @@ export const Navbar = ({ onToggleSidebar }) => {
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               className="p-2 hover:bg-gray-100 rounded-lg transition focus:outline-none"
             >
-              {user?.avatar ? (
+              {isValidAvatarUrl(user?.avatar) ? (
                 <img
                   src={user.avatar}
                   alt={user?.name}
                   className="w-8 h-8 rounded-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    if (e.target.nextElementSibling) e.target.nextElementSibling.style.display = 'flex';
+                  }}
                 />
-              ) : (
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${getBackgroundColor(
-                    user?.name
-                  )}`}
-                >
-                  {getInitials(user?.name)}
-                </div>
-              )}
+              ) : null}
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${getBackgroundColor(
+                  user?.name
+                )}`}
+                style={{display: isValidAvatarUrl(user?.avatar) ? 'none' : 'flex'}}
+              >
+                {getInitials(user?.name)}
+              </div>
             </button>
 
             {/* Dropdown Menu Items */}
@@ -105,21 +127,25 @@ export const Navbar = ({ onToggleSidebar }) => {
                   <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
                 </div>
                 <div className="p-4 border-b border-gray-200 hidden sm:block text-center">
-                  {user?.avatar ? (
+                  {isValidAvatarUrl(user?.avatar) ? (
                     <img
                       src={user.avatar}
                       alt={user?.name}
                       className="w-12 h-12 rounded-full object-cover mx-auto mb-2"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        if (e.target.nextElementSibling) e.target.nextElementSibling.style.display = 'flex';
+                      }}
                     />
-                  ) : (
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-2 ${getBackgroundColor(
-                        user?.name
-                      )}`}
-                    >
-                      {getInitials(user?.name)}
-                    </div>
-                  )}
+                  ) : null}
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-2 ${getBackgroundColor(
+                      user?.name
+                    )}`}
+                    style={{display: isValidAvatarUrl(user?.avatar) ? 'none' : 'flex'}}
+                  >
+                    {getInitials(user?.name)}
+                  </div>
                   <p className="text-sm font-semibold text-gray-800">{user?.name}</p>
                   <p className="text-xs text-gray-500 capitalize mt-1">{user?.role}</p>
                 </div>

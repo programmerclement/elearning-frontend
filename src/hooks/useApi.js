@@ -58,46 +58,6 @@ export const useVerifyToken = () => {
 };
 
 // ============================================================================
-// PROJECT HOOKS
-// ============================================================================
-
-export const useMyProjects = () => {
-  return useQuery({
-    queryKey: ['projects', 'my'],
-    queryFn: async () => {
-      const response = await apiClient.get('/projects/my');
-      return response.data;
-    },
-  });
-};
-
-export const useAllProjects = () => {
-  return useQuery({
-    queryKey: ['projects', 'all'],
-    queryFn: async () => {
-      const response = await apiClient.get('/projects');
-      return response.data;
-    },
-  });
-};
-
-export const useCreateProject = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (formData) => {
-      const response = await apiClient.post('/projects', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects', 'my'] });
-      queryClient.invalidateQueries({ queryKey: ['projects', 'all'] });
-    },
-  });
-};
-
-// ============================================================================
 // DASHBOARD HOOKS
 // ============================================================================
 
@@ -746,6 +706,129 @@ export const useUpdateUserProfile = () => {
       queryClient.invalidateQueries({ queryKey: ['user', 'profile', userId] });
       queryClient.invalidateQueries({ queryKey: ['auth', 'profile'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'student'] });
+    },
+  });
+};
+
+// ============================================================================
+// PROJECT HOOKS
+// ============================================================================
+
+export const useMyProjects = () => {
+  return useQuery({
+    queryKey: ['projects', 'my'],
+    queryFn: async () => {
+      const response = await apiClient.get('/projects/my');
+      return response.data;
+    },
+  });
+};
+
+export const useCreateProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (formData) => {
+      const response = await apiClient.post('/projects', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', 'my'] });
+    },
+  });
+};
+
+export const useProject = (projectId) => {
+  return useQuery({
+    queryKey: ['projects', projectId],
+    queryFn: async () => {
+      const response = await apiClient.get(`/projects/${projectId}`);
+      return response.data;
+    },
+    enabled: !!projectId,
+  });
+};
+
+export const useUpdateProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ projectId, formData }) => {
+      const response = await apiClient.put(`/projects/${projectId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['projects', 'my'] });
+      queryClient.invalidateQueries({ queryKey: ['projects', data.id] });
+    },
+  });
+};
+
+export const useDeleteProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (projectId) => {
+      const response = await apiClient.delete(`/projects/${projectId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', 'my'] });
+    },
+  });
+};
+
+// ============================================================================
+// FOLLOWERS HOOKS
+// ============================================================================
+
+export const useFollowers = (userId) => {
+  return useQuery({
+    queryKey: ['followers', userId],
+    queryFn: async () => {
+      const response = await apiClient.get(`/followers/${userId}`);
+      return response.data;
+    },
+    enabled: !!userId,
+  });
+};
+
+export const useFollowing = (userId) => {
+  return useQuery({
+    queryKey: ['following', userId],
+    queryFn: async () => {
+      const response = await apiClient.get(`/followers/${userId}/following`);
+      return response.data;
+    },
+    enabled: !!userId,
+  });
+};
+
+export const useFollowUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (followUserId) => {
+      const response = await apiClient.post(`/followers/${followUserId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['followers'] });
+      queryClient.invalidateQueries({ queryKey: ['following'] });
+    },
+  });
+};
+
+export const useUnfollowUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (followUserId) => {
+      const response = await apiClient.delete(`/followers/${followUserId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['followers'] });
+      queryClient.invalidateQueries({ queryKey: ['following'] });
     },
   });
 };

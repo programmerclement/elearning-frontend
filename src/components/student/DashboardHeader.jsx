@@ -6,14 +6,45 @@ import { Link } from 'react-router-dom';
  * Displays user profile, stats, and action buttons
  */
 export const DashboardHeader = ({ user, stats }) => {
+  // Validate avatar URL - check if it's a valid and complete data/HTTP URL
+  const isValidAvatarUrl = (url) => {
+    if (!url || typeof url !== 'string' || !url.trim()) return false;
+    // Check if it's a data URL - should be reasonably long (at least 100 chars for valid base64)
+    if (url.startsWith('data:')) {
+      return url.length > 100 && url.includes(',');
+    }
+    // Check if it's an http URL
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url.length > 10;
+    }
+    // Check if it's a relative path
+    if (url.startsWith('/')) {
+      return url.length > 1;
+    }
+    return false;
+  };
+
   return (
     <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg shadow-lg p-6 md:p-8 text-white mb-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         {/* Profile Section */}
         <div className="flex items-center space-x-4">
           <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-blue-400 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
-            {user?.avatar ? (
-              <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+            {isValidAvatarUrl(user?.avatar) ? (
+              <img 
+                src={user.avatar} 
+                alt={user.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                  svg.className.baseVal = 'w-12 h-12 text-white';
+                  svg.setAttribute('fill', 'currentColor');
+                  svg.setAttribute('viewBox', '0 0 20 20');
+                  svg.innerHTML = '<path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />';
+                  e.target.parentElement.appendChild(svg);
+                }}
+              />
             ) : (
               <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />

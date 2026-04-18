@@ -19,6 +19,24 @@ export default function UserProfile({ userId, currentUserId }) {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('about');
 
+  // Validate avatar URL - check if it's a valid and complete data/HTTP URL
+  const isValidAvatarUrl = (url) => {
+    if (!url || typeof url !== 'string' || !url.trim()) return false;
+    // Check if it's a data URL - should be reasonably long (at least 100 chars for valid base64)
+    if (url.startsWith('data:')) {
+      return url.length > 100 && url.includes(',');
+    }
+    // Check if it's an http URL
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url.length > 10;
+    }
+    // Check if it's a relative path
+    if (url.startsWith('/')) {
+      return url.length > 1;
+    }
+    return false;
+  };
+
   useEffect(() => {
     fetchUserData();
   }, [userId]);
@@ -87,11 +105,15 @@ export default function UserProfile({ userId, currentUserId }) {
         <div className="flex items-start gap-6">
           {/* Avatar */}
           <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center text-4xl font-bold text-blue-600 flex-shrink-0">
-            {user.avatar ? (
+            {isValidAvatarUrl(user?.avatar) ? (
               <img
                 src={user.avatar}
                 alt={user.name}
                 className="w-24 h-24 rounded-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.textContent = user.name?.charAt(0).toUpperCase() || '';
+                }}
               />
             ) : (
               user.name?.charAt(0).toUpperCase()

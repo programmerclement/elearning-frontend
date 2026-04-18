@@ -11,9 +11,9 @@ import { RegisterPage } from './pages/auth/Register';
 import { StudentDashboard } from './pages/student/StudentDashboard';
 import { ProfileSettings } from './pages/student/ProfileSettings';
 import { StudentCoursesPage } from './pages/student/StudentCoursesPage';
-import { StudentProjectsPage } from './pages/student/StudentProjectsPage';
 import { StudentProgressPage } from './pages/student/StudentProgressPage';
 import { StudentCourseDetailsPage } from './pages/student/StudentCourseDetailsPage';
+import { StudentProjectsPage } from './pages/student/StudentProjectsPage';
 import { CourseDetailsPage } from './pages/student/CourseDetailsPage';
 import { PaymentInvoicesPage } from './pages/student/PaymentInvoicesPage';
 
@@ -97,16 +97,6 @@ function App() {
               }
             />
 
-            {/* Shared Routes */}
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfileSettings />
-                </ProtectedRoute>
-              }
-            />
-
             {/* Student Routes */}
             <Route
               path="/student/dashboard"
@@ -117,18 +107,18 @@ function App() {
               }
             />
             <Route
-              path="/student/courses"
+              path="/student/profile/:userId"
               element={
                 <ProtectedRoute requiredRole="student">
-                  <StudentCoursesPage />
+                  <ProfileSettings />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/student/projects"
+              path="/student/courses"
               element={
                 <ProtectedRoute requiredRole="student">
-                  <StudentProjectsPage />
+                  <StudentCoursesPage />
                 </ProtectedRoute>
               }
             />
@@ -145,6 +135,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="student">
                   <StudentProgressPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/projects"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentProjectsPage />
                 </ProtectedRoute>
               }
             />
